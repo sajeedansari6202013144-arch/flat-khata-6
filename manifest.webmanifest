@@ -1,0 +1,9 @@
+{
+  "name": "Flat Khata 6",
+  "short_name": "Flat Khata 6",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#101827",
+  "icons": []
+}
