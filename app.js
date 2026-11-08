@@ -1,7 +1,14 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-const firebaseConfig={apiKey:"PASTE_API_KEY",authDomain:"PASTE_PROJECT.firebaseapp.com",projectId:"PASTE_PROJECT_ID",storageBucket:"PASTE_PROJECT.appspot.com",messagingSenderId:"PASTE_SENDER_ID",appId:"PASTE_APP_ID"};
+const firebaseConfig = {
+  apiKey: "AIzaSyCq6dRqw8_Zg5Hn9WjqAIeqyB9bcLKYHv4",
+  authDomain: "hisab-kitab-15615.firebaseapp.com",
+  projectId: "hisab-kitab-15615",
+  storageBucket: "hisab-kitab-15615.firebasestorage.app",
+  messagingSenderId: "1011174772797",
+  appId: "1:1011174772797:web:ce40eb61fb0c69fd685a54"
+};
 const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"],$=x=>document.getElementById(x),M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[];
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
