@@ -1,51 +1,380 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyCq6dRqw8_Zg5Hn9WjqAIeqyB9bcLKYHv4",authDomain:"hisab-kitab-15615.firebaseapp.com",projectId:"hisab-kitab-15615",storageBucket:"hisab-kitab-15615.firebasestorage.app",messagingSenderId:"1011174772797",appId:"1:1011174772797:web:ce40eb61fb0c69fd685a54"};
-const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"],$=id=>document.getElementById(id),M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
+
+const firebaseConfig={
+apiKey:"AIzaSyCq6dRqw8_Zg5Hn9WjqAIeqyB9bcLKYHv4",
+authDomain:"hisab-kitab-15615.firebaseapp.com",
+projectId:"hisab-kitab-15615",
+storageBucket:"hisab-kitab-15615.firebasestorage.app",
+messagingSenderId:"1011174772797",
+appId:"1:1011174772797:web:ce40eb61fb0c69fd685a54"
+};
+
+const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"];
+const $=id=>document.getElementById(id);
+const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
+
 let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={};
+
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
+
 function msg(t){$("status").textContent=t}
-function days(a,b){let x=new Date(a+"T12:00:00"),y=new Date(b+"T12:00:00");return !a||!b||y<x?0:Math.floor((y-x)/86400000)+1}
-function stay(n,a,b){let d=days(a,b);away.filter(x=>x.name===n).forEach(x=>{let lo=x.start>a?x.start:a,hi=x.end<b?x.end:b;if(hi>=lo)d-=days(lo,hi)});return Math.max(0,d)}
-function balances(){let b=N.map(()=>0);expenses.forEach(e=>{let p=N.indexOf(e.payer);if(p>=0)b[p]+=+e.amount;(e.shares||[]).forEach(s=>{let i=N.indexOf(s.name);if(i>=0)b[i]-=+s.amount})});payments.filter(p=>p.status==="confirmed").forEach(p=>{let i=N.indexOf(p.from),j=N.indexOf(p.to);if(i>=0)b[i]+=+p.amount;if(j>=0)b[j]-=+p.amount});return b}
-function settlements(){let b=balances(),d=b.map((v,i)=>({i,a:-v})).filter(x=>x.a>.005),c=b.map((v,i)=>({i,a:v})).filter(x=>x.a>.005),o=[],i=0,j=0;while(i<d.length&&j<c.length){let a=Math.min(d[i].a,c[j].a);o.push({from:N[d[i].i],to:N[c[j].i],amount:a});d[i].a-=a;c[j].a-=a;if(d[i].a<.01)i++;if(c[j].a<.01)j++}return o}
+
+function days(a,b){
+let x=new Date(a+"T12:00:00"),y=new Date(b+"T12:00:00");
+return !a||!b||y<x?0:Math.floor((y-x)/86400000)+1;
+}
+
+function stay(n,a,b){
+let d=days(a,b);
+away.filter(x=>x.name===n).forEach(x=>{
+let lo=x.start>a?x.start:a,hi=x.end<b?x.end:b;
+if(hi>=lo)d-=days(lo,hi);
+});
+return Math.max(0,d);
+}
+
+function balances(){
+let b=N.map(()=>0);
+expenses.forEach(e=>{
+let p=N.indexOf(e.payer);
+if(p>=0)b[p]+=+e.amount;
+(e.shares||[]).forEach(s=>{
+let i=N.indexOf(s.name);
+if(i>=0)b[i]-=+s.amount;
+});
+});
+payments.filter(p=>p.status==="confirmed").forEach(p=>{
+let i=N.indexOf(p.from),j=N.indexOf(p.to);
+if(i>=0)b[i]+=+p.amount;
+if(j>=0)b[j]-=+p.amount;
+});
+return b;
+}
+
+function settlements(){
+let b=balances();
+let d=b.map((v,i)=>({i,a:-v})).filter(x=>x.a>.005);
+let c=b.map((v,i)=>({i,a:v})).filter(x=>x.a>.005);
+let o=[],i=0,j=0;
+while(i<d.length&&j<c.length){
+let a=Math.min(d[i].a,c[j].a);
+o.push({from:N[d[i].i],to:N[c[j].i],amount:a});
+d[i].a-=a;c[j].a-=a;
+if(d[i].a<.01)i++;
+if(c[j].a<.01)j++;
+}
+return o;
+}
+
 async function payLink(to,maximum){
 let from=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
-if(!from){alert("Your member profile could not be identified.");return}
+if(!from){alert("Your member profile could not be identified.");return;}
+
 let ownDue=settlements().find(x=>x.from===from&&x.to===to);
-if(!ownDue){alert("You can only pay your own pending balance.");return}
-let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to).reduce((a,p)=>a+Number(p.amount||0),0);
+if(!ownDue){alert("You can only pay your own pending balance.");return;}
+
+let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to)
+.reduce((a,p)=>a+Number(p.amount||0),0);
+
 let available=Math.max(0,Number(ownDue.amount)-pending);
-if(available<=0){alert("Your payment is already awaiting confirmation.");return}
-let amount=Number(prompt("Enter amount to pay now. Remaining payable: ₹"+available.toFixed(2),String(Math.min(50,available))));
-if(!Number.isFinite(amount)||amount<=0||amount>available){alert("Enter an amount from ₹0.01 up to ₹"+available.toFixed(2));return}
-let receiver=members.find(m=>m.name===to);
-if(!receiver){alert("Recipient member not found.");return}
-let v=upis[to];
-if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it in Room settings.");return}
-await addDoc(collection(db,"rooms",room,"settlements"),{from,to,amount,status:"pending",recipientUid:receiver.uid,recipientName:to,createdBy:uid,createdByName:from,createdAt:serverTimestamp(),date:new Date().toISOString().slice(0,10)});
-let url=`upi://pay?pa=${encodeURIComponent(v)}&pn=${encodeURIComponent(to)}&am=${encodeURIComponent(Number(amount).toFixed(2))}&cu=INR&tn=${encodeURIComponent("Flat Khata 6 settlement")}`;
-location.href=url
+if(available<=0){alert("Your payment is already awaiting confirmation.");return;}
+
+let amount=Number(prompt(
+"Enter amount to pay now. Remaining payable: ₹"+available.toFixed(2),
+String(Math.min(50,available))
+));
+
+if(!Number.isFinite(amount)||amount<=0||amount>available){
+alert("Enter a valid amount up to ₹"+available.toFixed(2));
+return;
 }
+
+let receiver=members.find(m=>m.name===to);
+if(!receiver){alert("Recipient member not found.");return;}
+
+let v=upis[to];
+if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it.");return;}
+
+localStorage.setItem("fk6_payment_draft",JSON.stringify({
+from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()
+}));
+
+let url=`upi://pay?pa=${encodeURIComponent(v)}&am=${encodeURIComponent(Number(amount).toFixed(2))}&cu=INR&tn=${encodeURIComponent("Flat Khata 6")}`;
+location.href=url;
+}function showPaymentReturn(){
+let raw=localStorage.getItem("fk6_payment_draft");
+let box=document.getElementById("fk6PaymentReturn");
+if(!raw||!box)return;
+let d;try{d=JSON.parse(raw)}catch(e){localStorage.removeItem("fk6_payment_draft");return}
+if(Date.now()-Number(d.createdAt||0)>30*60*1000){localStorage.removeItem("fk6_payment_draft");box.hidden=true;return}
+box.hidden=false;
+box.innerHTML=`<div style="background:#102b22;border:1px solid #2a8061;border-radius:16px;padding:16px;margin:12px;color:#fff;position:relative;z-index:9999"><b>Did you complete the payment?</b><p style="margin:8px 0;color:#c5d8d0">${d.from} → ${d.to} · ${M(d.amount)}</p><p style="font-size:13px;color:#c5d8d0">Only tap Payment Done after the UPI app shows successful payment.</p><div style="display:flex;gap:8px"><button id="fk6PaymentDone" style="flex:1;background:#25c987;color:#06271c;border:0;border-radius:10px;padding:12px;font-weight:700">Payment Done</button><button id="fk6PaymentCancel" style="flex:1;background:#59313b;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:700">I didn't pay</button></div></div>`;
+document.getElementById("fk6PaymentDone").onclick=async()=>{
+try{
+if(!uid||!room)throw Error("Room is not connected. Reopen the app and try again.");
+if(d.from!==(localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name))throw Error("This payment belongs to another member.");
+await addDoc(collection(db,"rooms",room,"settlements"),{from:d.from,to:d.to,amount:Number(d.amount),status:"pending",recipientUid:d.recipientUid,recipientName:d.to,createdBy:uid,createdByName:d.from,createdAt:serverTimestamp(),date:new Date().toISOString().slice(0,10)});
+localStorage.removeItem("fk6_payment_draft");box.hidden=true;alert("Payment claim sent. The recipient must confirm receipt before balances change.");render();
+}catch(e){alert("Could not record payment: "+e.message)}
+};
+document.getElementById("fk6PaymentCancel").onclick=()=>{localStorage.removeItem("fk6_payment_draft");box.hidden=true;alert("No payment record was created.")};
+}
+
 function showTab(id){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
-function render(){let b=balances();$("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));$("memberCount").textContent=members.length+"/6";$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${n} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");let ss=settlements();let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;$("settle").innerHTML=ss.map(x=>{let pending=payments.filter(p=>p.status==="pending"&&p.from===x.from&&p.to===x.to).reduce((a,p)=>a+Number(p.amount||0),0),left=Math.max(0,x.amount-pending);return `<div class="row"><span>${x.from} pays ${x.to} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`}).join("")||"All settled.";let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${e.payer}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>s.name+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;$("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";$("recentList").innerHTML=expenses.slice(0,5).map(exp).join("")||"No expenses yet.";$("awayList").innerHTML=away.map(a=>`<div class="row">${a.name}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));document.querySelectorAll("[data-pay]").forEach(b=>b.onclick=()=>payLink(b.dataset.pay,b.dataset.amount));renderExtras()}
-function renderExtras(){let month=$("reportMonth").value||new Date().toISOString().slice(0,7),list=expenses.filter(e=>(e.date||"").slice(0,7)===month),sum=list.reduce((s,e)=>s+(+e.amount||0),0),cats={};list.forEach(e=>cats[e.category||"Other"]=(cats[e.category||"Other"]||0)+(+e.amount||0));$("monthTotal").textContent=M(sum);$("monthCount").textContent=list.length;$("categoryReport").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span>${k}</span><b>${M(v)}</b></div>`).join("")||"No expenses this month.";let spent=sum;$("budgetStatus").textContent=budget?`Budget ${M(budget)} · Used ${M(spent)} · Remaining ${M(budget-spent)}${spent>budget?" · Budget exceeded!":""}`:"No monthly budget set.";if(budget&&spent>budget&&localStorage.getItem("fk6_budget_alert_"+month)!=="yes"){alert("Monthly budget exceeded. Spent "+M(spent)+" of "+M(budget));localStorage.setItem("fk6_budget_alert_"+month,"yes")}let acts=[...expenses.map(e=>({t:e.createdAt?.toDate?.()||new Date(e.date||Date.now()),s:`${e.createdByName||e.payer} added ${e.title} · ${M(e.amount)}`})),...away.map(a=>({t:new Date(a.start),s:`${a.name} recorded away days ${a.start} to ${a.end}`}))].sort((a,b)=>b.t-a.t);$("activityList").innerHTML=acts.slice(0,25).map(a=>`<div class="row">${a.s}</div>`).join("")||"No activity yet.";$("billList").innerHTML=bills.map(x=>`<div class="row"><span><b>${x.title}</b><br><small>${x.category}, paid by ${x.payer}</small></span><b>${M(x.amount)}</b></div>`).join("")||"No fixed bills saved.";$("settlementList").innerHTML=payments.map(x=>`<div class="row"><span>${x.from} → ${x.to} ${M(x.amount)}<br><small>${x.date||""} · ${x.status||"legacy record"}</small></span>${x.status==="pending"&&x.recipientUid===uid?`<button style="width:auto" data-confirm="${x.id}">Confirm received</button>`:""}${x.status==="pending"&&x.createdBy===uid?`<button class="danger" style="width:auto" data-cancel="${x.id}">Cancel request</button>`:""}</div>`).join("")||"No payments recorded.";document.querySelectorAll("[data-confirm]").forEach(b=>b.onclick=async()=>{if(!confirm("Confirm that you received this payment?"))return;try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.confirm),{status:"confirmed",confirmedAt:serverTimestamp(),confirmedBy:uid});alert("Payment confirmed. Balances updated.")}catch(e){alert("Could not confirm. Update Firestore Rules first. "+e.message)}});document.querySelectorAll("[data-cancel]").forEach(b=>b.onclick=async()=>{if(!confirm("Cancel this pending payment request?"))return;try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.cancel),{status:"cancelled",cancelledAt:serverTimestamp(),cancelledBy:uid});alert("Payment request cancelled.")}catch(e){alert("Could not cancel. Update Firestore Rules first. "+e.message)}});;$("upiList").innerHTML=N.map(n=>`<div class="row">${n}<small>${upis[n]||"UPI ID not added"}</small></div>`).join("")}
-function csv(){let m=$("reportMonth").value||new Date().toISOString().slice(0,7),rows=[["Date","Title","Category","Paid by","Amount","Split","Shares"],...expenses.filter(e=>(e.date||"").slice(0,7)===m).map(e=>[e.date,e.title,e.category,e.payer,e.amount,e.splitMode,(e.shares||[]).map(s=>s.name+":"+s.amount).join("; ")])],data=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),u=URL.createObjectURL(new Blob([data],{type:"text/csv"})),a=document.createElement("a");a.href=u;a.download=`flat-khata-${m}.csv`;a.click();URL.revokeObjectURL(u)}
-function listen(){off.forEach(f=>f());off=[];off.push(onSnapshot(collection(db,"rooms",room,"expenses"),s=>{expenses=s.docs.map(d=>({id:d.id,...d.data()}));render();notifyActivity("expense",s.docChanges())}),onSnapshot(collection(db,"rooms",room,"absences"),s=>{away=s.docs.map(d=>({id:d.id,...d.data()}));render();notifyActivity("away",s.docChanges())}),onSnapshot(collection(db,"rooms",room,"members"),s=>{members=s.docs.map(d=>d.data());$("memberCount").textContent=members.length+"/6";["payer","awayName","billPayer","settleFrom","settleTo","upiMember"].forEach(id=>$(id).innerHTML=N.map(n=>`<option>${n}</option>`).join(""));$("checks").innerHTML=N.map(n=>`<label><input type="checkbox" class="part" value="${n}" checked> ${n}</label>`).join("");$("custom").innerHTML=N.map(n=>`<label>${n}<input class="share" data-name="${n}" type="number" placeholder="₹"></label>`).join("");render()}),onSnapshot(collection(db,"rooms",room,"fixedBills"),s=>{bills=s.docs.map(d=>({id:d.id,...d.data()}));renderExtras()}),onSnapshot(collection(db,"rooms",room,"settlements"),s=>{payments=s.docs.map(d=>({id:d.id,...d.data()}));render()}),onSnapshot(doc(db,"rooms",room,"settings","budget"),s=>{budget=s.exists()?+s.data().amount:0;renderExtras()}),onSnapshot(doc(db,"rooms",room,"settings","upi"),s=>{upis=s.exists()?(s.data().ids||{}):{};renderExtras()}));$("join").classList.add("hidden");$("app").classList.remove("hidden");$("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · Member")}
+
+function render(){
+let b=balances();
+$("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));
+$("memberCount").textContent=members.length+"/6";
+$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${n} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");
+let ss=settlements();
+let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
+$("settle").innerHTML=ss.map(x=>{
+let pending=payments.filter(p=>p.status==="pending"&&p.from===x.from&&p.to===x.to).reduce((a,p)=>a+Number(p.amount||0),0),left=Math.max(0,x.amount-pending);
+return `<div class="row"><span>${x.from} pays ${x.to} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`
+}).join("")||"All settled.";
+let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${e.payer}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>s.name+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
+$("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
+$("recentList").innerHTML=expenses.slice(0,5).map(exp).join("")||"No expenses yet.";
+$("awayList").innerHTML=away.map(a=>`<div class="row">${a.name}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
+document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
+document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
+document.querySelectorAll("[data-pay]").forEach(b=>b.onclick=()=>payLink(b.dataset.pay,b.dataset.amount));
+renderExtras()
+}
+
+function renderExtras(){
+let month=$("reportMonth").value||new Date().toISOString().slice(0,7),list=expenses.filter(e=>(e.date||"").slice(0,7)===month),sum=list.reduce((s,e)=>s+(+e.amount||0),0),cats={};
+list.forEach(e=>cats[e.category||"Other"]=(cats[e.category||"Other"]||0)+(+e.amount||0));
+$("monthTotal").textContent=M(sum);
+$("monthCount").textContent=list.length;
+$("categoryReport").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span>${k}</span><b>${M(v)}</b></div>`).join("")||"No expenses this month.";
+let spent=sum;
+$("budgetStatus").textContent=budget?`Budget ${M(budget)} · Used ${M(spent)} · Remaining ${M(budget-spent)}${spent>budget?" · Budget exceeded!":""}`:"No monthly budget set.";
+if(budget&&spent>budget&&localStorage.getItem("fk6_budget_alert_"+month)!=="yes"){alert("Monthly budget exceeded. Spent "+M(spent)+" of "+M(budget));localStorage.setItem("fk6_budget_alert_"+month,"yes")}
+let acts=[...expenses.map(e=>({t:e.createdAt?.toDate?.()||new Date(e.date||Date.now()),s:`${e.createdByName||e.payer} added ${e.title} · ${M(e.amount)}`})),...away.map(a=>({t:new Date(a.start),s:`${a.name} recorded away days ${a.start} to ${a.end}`}))].sort((a,b)=>b.t-a.t);
+$("activityList").innerHTML=acts.slice(0,25).map(a=>`<div class="row">${a.s}</div>`).join("")||"No activity yet.";
+$("billList").innerHTML=bills.map(x=>`<div class="row"><span><b>${x.title}</b><br><small>${x.category}, paid by ${x.payer}</small></span><b>${M(x.amount)}</b></div>`).join("")||"No fixed bills saved.";
+$("settlementList").innerHTML=payments.map(x=>`<div class="row"><span>${x.from} → ${x.to} ${M(x.amount)}<br><small>${x.date||""} · ${x.status||"legacy record"}</small></span>${x.status==="pending"&&x.recipientUid===uid?`<button style="width:auto" data-confirm="${x.id}">Confirm received</button>`:""}${x.status==="pending"&&x.createdBy===uid?`<button class="danger" style="width:auto" data-cancel="${x.id}">Cancel request</button>`:""}</div>`).join("")||"No payments recorded.";
+document.querySelectorAll("[data-confirm]").forEach(b=>b.onclick=async()=>{
+if(!confirm("Confirm that you received this payment?"))return;
+try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.confirm),{status:"confirmed",confirmedAt:serverTimestamp(),confirmedBy:uid});alert("Payment confirmed. Balances updated.")}
+catch(e){alert("Could not confirm. Update Firestore Rules first. "+e.message)}
+});
+document.querySelectorAll("[data-cancel]").forEach(b=>b.onclick=async()=>{
+if(!confirm("Cancel this pending payment request?"))return;
+try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.cancel),{status:"cancelled",cancelledAt:serverTimestamp(),cancelledBy:uid});alert("Payment request cancelled.")}
+catch(e){alert("Could not cancel. Update Firestore Rules first. "+e.message)}
+});
+$("upiList").innerHTML=N.map(n=>`<div class="row">${n}<small>${upis[n]||"UPI ID not added"}</small></div>`).join("")
+}
+
+function csv(){
+let m=$("reportMonth").value||new Date().toISOString().slice(0,7),rows=[["Date","Title","Category","Paid by","Amount","Split","Shares"],...expenses.filter(e=>(e.date||"").slice(0,7)===m).map(e=>[e.date,e.title,e.category,e.payer,e.amount,e.splitMode,(e.shares||[]).map(s=>s.name+":"+s.amount).join("; ")])],data=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n"),u=URL.createObjectURL(new Blob([data],{type:"text/csv"})),a=document.createElement("a");
+a.href=u;a.download=`flat-khata-${m}.csv`;a.click();URL.revokeObjectURL(u)
+  }function listen(){
+off.forEach(f=>f());off=[];
+off.push(
+onSnapshot(collection(db,"rooms",room,"expenses"),s=>{
+expenses=s.docs.map(d=>({id:d.id,...d.data()}));
+render();notifyActivity("expense",s.docChanges())
+}),
+onSnapshot(collection(db,"rooms",room,"absences"),s=>{
+away=s.docs.map(d=>({id:d.id,...d.data()}));
+render();notifyActivity("away",s.docChanges())
+}),
+onSnapshot(collection(db,"rooms",room,"members"),s=>{
+members=s.docs.map(d=>d.data());
+$("memberCount").textContent=members.length+"/6";
+["payer","awayName","billPayer","settleFrom","settleTo","upiMember"].forEach(id=>$(id).innerHTML=N.map(n=>`<option>${n}</option>`).join(""));
+$("checks").innerHTML=N.map(n=>`<label><input type="checkbox" class="part" value="${n}" checked> ${n}</label>`).join("");
+$("custom").innerHTML=N.map(n=>`<label>${n}<input class="share" data-name="${n}" type="number" placeholder="₹"></label>`).join("");
+render()
+}),
+onSnapshot(collection(db,"rooms",room,"fixedBills"),s=>{
+bills=s.docs.map(d=>({id:d.id,...d.data()}));renderExtras()
+}),
+onSnapshot(collection(db,"rooms",room,"settlements"),s=>{
+payments=s.docs.map(d=>({id:d.id,...d.data()}));render()
+}),
+onSnapshot(doc(db,"rooms",room,"settings","budget"),s=>{
+budget=s.exists()?+s.data().amount:0;renderExtras()
+}),
+onSnapshot(doc(db,"rooms",room,"settings","upi"),s=>{
+upis=s.exists()?(s.data().ids||{}):{};renderExtras()
+})
+);
+$("join").classList.add("hidden");
+$("app").classList.remove("hidden");
+$("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · Member")
+}
+
 let firstExpenseSnapshot=true,firstAwaySnapshot=true;
-function notifyActivity(type,changes){let first=type==="expense"?firstExpenseSnapshot:firstAwaySnapshot;if(type==="expense")firstExpenseSnapshot=false;else firstAwaySnapshot=false;if(first)return;for(const c of changes){if(c.type!=="added")continue;let d=c.doc.data();if(d.createdBy===uid)continue;let message=type==="expense"?`${d.createdByName||d.payer} added ${d.title||"an expense"} (${M(d.amount)})`:`${d.name} added away dates`;if("Notification"in window&&Notification.permission==="granted")new Notification("Flat Khata 6",{body:message});else msg("New activity: "+message)}}
-async function join(code,name){let r=await getDoc(doc(db,"rooms",code));if(!r.exists())throw Error("Room code not found.");let ref=doc(db,"rooms",code,"members",uid),old=await getDoc(ref);if(old.exists()){if(old.data().name!==name)throw Error("This phone is already registered as "+old.data().name+".");room=code;admin=r.data().adminUid===uid;localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name",name);listen();msg("Welcome back, "+name+". Your flat is connected.");return}let ms=await getDocs(collection(db,"rooms",code,"members"));if(ms.docs.some(d=>d.data().name===name))throw Error(name+" is already registered on another device. Use that member's original phone/browser.");if(ms.size>=6)throw Error("All six member slots are filled.");await setDoc(ref,{uid,name,role:r.data().adminUid===uid?"admin":"member",joinedAt:serverTimestamp()});room=code;admin=r.data().adminUid===uid;localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name",name);listen()}
-$("createBtn").onclick=async()=>{try{if($("name").value!=="Sajeed")throw Error("Select Sajeed to create the room.");let code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%32]).join("");await setDoc(doc(db,"rooms",code),{name:"Flat Khata 6",adminUid:uid,createdAt:serverTimestamp()});await setDoc(doc(db,"rooms",code,"members",uid),{uid,name:"Sajeed",role:"admin",joinedAt:serverTimestamp()});room=code;admin=true;localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name","Sajeed");listen();alert("Room code: "+code)}catch(e){alert(e.message)}};
-$("joinBtn").onclick=async()=>{try{await join($("code").value.trim().toUpperCase(),$("name").value)}catch(e){alert(e.message)}};
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
+
+function notifyActivity(type,changes){
+let first=type==="expense"?firstExpenseSnapshot:firstAwaySnapshot;
+if(type==="expense")firstExpenseSnapshot=false;
+else firstAwaySnapshot=false;
+if(first)return;
+for(const c of changes){
+if(c.type!=="added")continue;
+let d=c.doc.data();
+if(d.createdBy===uid)continue;
+let message=type==="expense"?`${d.createdByName||d.payer} added ${d.title||"an expense"} (${M(d.amount)})`:`${d.name} added away dates`;
+if("Notification"in window&&Notification.permission==="granted")
+new Notification("Flat Khata 6",{body:message});
+else msg("New activity: "+message)
+}
+}
+
+async function join(code,name){
+let r=await getDoc(doc(db,"rooms",code));
+if(!r.exists())throw Error("Room code not found.");
+let ref=doc(db,"rooms",code,"members",uid),old=await getDoc(ref);
+if(old.exists()){
+if(old.data().name!==name)throw Error("This phone is already registered as "+old.data().name+".");
+room=code;admin=r.data().adminUid===uid;
+localStorage.setItem("fk6_room",code);
+localStorage.setItem("fk6_name",name);
+listen();msg("Welcome back, "+name+". Your flat is connected.");return
+}
+let ms=await getDocs(collection(db,"rooms",code,"members"));
+if(ms.docs.some(d=>d.data().name===name))throw Error(name+" is already registered on another device. Use that member's original phone/browser.");
+if(ms.size>=6)throw Error("All six member slots are filled.");
+await setDoc(ref,{uid,name,role:r.data().adminUid===uid?"admin":"member",joinedAt:serverTimestamp()});
+room=code;admin=r.data().adminUid===uid;
+localStorage.setItem("fk6_room",code);
+localStorage.setItem("fk6_name",name);
+listen()
+}
+
+$("createBtn").onclick=async()=>{
+try{
+if($("name").value!=="Sajeed")throw Error("Select Sajeed to create the room.");
+let code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%32]).join("");
+await setDoc(doc(db,"rooms",code),{name:"Flat Khata 6",adminUid:uid,createdAt:serverTimestamp()});
+await setDoc(doc(db,"rooms",code,"members",uid),{uid,name:"Sajeed",role:"admin",joinedAt:serverTimestamp()});
+room=code;admin=true;
+localStorage.setItem("fk6_room",code);
+localStorage.setItem("fk6_name","Sajeed");
+listen();alert("Room code: "+code)
+}catch(e){alert(e.message)}
+};
+
+$("joinBtn").onclick=async()=>{
+try{await join($("code").value.trim().toUpperCase(),$("name").value)}
+catch(e){alert(e.message)}
+};
+
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
+
 $("mode").onchange=()=>$("custom").classList.toggle("hidden",$("mode").value!=="custom");
-$("saveExpense").onclick=async()=>{try{let amount=+$("amount").value,date=$("date").value,end=$("endDate").value||date,selected=[...document.querySelectorAll(".part:checked")].map(x=>x.value),mode=$("mode").value;if(!$("title").value.trim()||amount<=0||!date||end<date||!selected.length)throw Error("Fill all fields and select members.");let shares=[];if(mode==="custom"){shares=[...document.querySelectorAll(".share")].filter(x=>selected.includes(x.dataset.name)).map(x=>({name:x.dataset.name,amount:+x.value||0}));if(Math.abs(shares.reduce((a,x)=>a+x.amount,0)-amount)>.01)throw Error("Custom shares must equal total.")}else{let w=selected.map(name=>({name,days:mode==="perday"?stay(name,date,end):1})),total=w.reduce((a,x)=>a+x.days,0),used=0;if(!total)throw Error("No stay days in selected period.");w.forEach((x,i)=>{let v=i===w.length-1?Math.round((amount-used)*100)/100:Math.round(amount*x.days/total*100)/100;shares.push({name:x.name,amount:v});used+=v})}await addDoc(collection(db,"rooms",room,"expenses"),{title:$("title").value.trim(),amount,payer:$("payer").value,category:$("category").value,date,endDate:end,splitMode:mode,shares,createdBy:uid,createdByName:members.find(m=>m.uid===uid)?.name||"Member",createdAt:serverTimestamp()});$("title").value="";$("amount").value="";alert("Expense added and synced.")}catch(e){alert(e.message)}};
-$("saveAway").onclick=async()=>{try{let start=$("awayStart").value,end=$("awayEnd").value;if(!start||!end||end<start)throw Error("Enter valid dates.");await addDoc(collection(db,"rooms",room,"absences"),{name:$("awayName").value,start,end,reason:$("reason").value,createdBy:uid,createdAt:serverTimestamp()});$("reason").value="";alert("Away dates synced.")}catch(e){alert(e.message)}};
-$("reportMonth").value=new Date().toISOString().slice(0,7);$("reportMonth").onchange=renderExtras;$("exportCsv").onclick=csv;
-$("saveBudget").onclick=async()=>{try{let amount=+$("budgetAmount").value;if(amount<=0)throw Error("Enter a valid budget.");await setDoc(doc(db,"rooms",room,"settings","budget"),{amount,updatedBy:uid,updatedAt:serverTimestamp()});alert("Budget saved.")}catch(e){alert(e.message)}};
-$("saveBill").onclick=async()=>{try{let title=$("billTitle").value.trim(),amount=+$("billAmount").value;if(!title||amount<=0)throw Error("Enter bill name and amount.");await addDoc(collection(db,"rooms",room,"fixedBills"),{title,amount,category:$("billCategory").value,payer:$("billPayer").value,createdBy:uid,createdAt:serverTimestamp()});$("billTitle").value="";$("billAmount").value="";alert("Fixed bill saved.")}catch(e){alert(e.message)}};
-$("recordSettlement").onclick=async()=>{try{let from=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name,to=$("settleTo").value,amount=+$("settleAmount").value;if(!from||from===to||amount<=0)throw Error("Choose another recipient and enter a valid amount.");let recipient=members.find(m=>m.name===to);if(!recipient)throw Error("Recipient member not found.");let due=settlements().find(x=>x.from===from&&x.to===to);let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to).reduce((a,p)=>a+Number(p.amount||0),0);if(!due||amount>Math.max(0,due.amount-pending)+.005)throw Error("You can only record a payment up to your own outstanding balance.");await addDoc(collection(db,"rooms",room,"settlements"),{from,to,amount,status:"pending",recipientUid:recipient.uid,recipientName:to,date:new Date().toISOString().slice(0,10),createdBy:uid,createdByName:from,createdAt:serverTimestamp()});$("settleAmount").value="";alert("Payment recorded.")}catch(e){alert(e.message)}};
-$("saveUpi").onclick=async()=>{try{if(!admin)throw Error("Only Sajeed can manage UPI IDs.");let who=$("upiMember").value,id=$("upiValue").value.trim();if(!/^[\\w.\\-]{2,}@[\\w]{2,}$/.test(id))throw Error("Enter a valid UPI ID, for example name@okaxis.");let next={...upis,[who]:id};await setDoc(doc(db,"rooms",room,"settings","upi"),{ids:next,updatedBy:uid,updatedAt:serverTimestamp()});$("upiValue").value="";alert("UPI ID saved.")}catch(e){alert(e.message)}};
-$("notifyBtn").onclick=async()=>{if(!("Notification"in window)){alert("This browser does not support notifications.");return}let p=await Notification.requestPermission();alert(p==="granted"?"Notifications enabled on this device.":"Notification permission was not granted.")};
-const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getFirestore(app);signInAnonymously(auth).catch(e=>msg(e.message));onAuthStateChanged(auth,async u=>{if(!u)return;uid=u.uid;let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");if(c&&n){try{let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));if(r.exists()&&m.exists()&&m.data().name===n){room=c;admin=r.data().adminUid===uid;listen();msg("Welcome back, "+n+". Your flat is connected.");return}localStorage.removeItem("fk6_room");localStorage.removeItem("fk6_name")}catch(e){msg("Could not restore your room: "+e.message);return}}msg("Connected. Join with Sajeed's room code.")});
+
+$("saveExpense").onclick=async()=>{
+try{
+let amount=+$("amount").value,date=$("date").value,end=$("endDate").value||date,selected=[...document.querySelectorAll(".part:checked")].map(x=>x.value),mode=$("mode").value;
+if(!$("title").value.trim()||amount<=0||!date||end<date||!selected.length)throw Error("Fill all fields and select members.");
+let shares=[];
+if(mode==="custom"){
+shares=[...document.querySelectorAll(".share")].filter(x=>selected.includes(x.dataset.name)).map(x=>({name:x.dataset.name,amount:+x.value||0}));
+if(Math.abs(shares.reduce((a,x)=>a+x.amount,0)-amount)>.01)throw Error("Custom shares must equal total.")
+}else{
+let w=selected.map(name=>({name,days:mode==="perday"?stay(name,date,end):1})),total=w.reduce((a,x)=>a+x.days,0),used=0;
+if(!total)throw Error("No stay days in selected period.");
+w.forEach((x,i)=>{
+let v=i===w.length-1?Math.round((amount-used)*100)/100:Math.round(amount*x.days/total*100)/100;
+shares.push({name:x.name,amount:v});used+=v
+})
+}
+await addDoc(collection(db,"rooms",room,"expenses"),{title:$("title").value.trim(),amount,payer:$("payer").value,category:$("category").value,date,endDate:end,splitMode:mode,shares,createdBy:uid,createdByName:members.find(m=>m.uid===uid)?.name||"Member",createdAt:serverTimestamp()});
+$("title").value="";$("amount").value="";
+alert("Expense added and synced.")
+}catch(e){alert(e.message)}
+};
+
+$("saveAway").onclick=async()=>{
+try{
+let start=$("awayStart").value,end=$("awayEnd").value;
+if(!start||!end||end<start)throw Error("Enter valid dates.");
+await addDoc(collection(db,"rooms",room,"absences"),{name:$("awayName").value,start,end,reason:$("reason").value,createdBy:uid,createdAt:serverTimestamp()});
+$("reason").value="";alert("Away dates synced.")
+}catch(e){alert(e.message)}
+};
+
+$("reportMonth").value=new Date().toISOString().slice(0,7);
+$("reportMonth").onchange=renderExtras;
+$("exportCsv").onclick=csv;
+
+$("saveBudget").onclick=async()=>{
+try{
+let amount=+$("budgetAmount").value;
+if(amount<=0)throw Error("Enter a valid budget.");
+await setDoc(doc(db,"rooms",room,"settings","budget"),{amount,updatedBy:uid,updatedAt:serverTimestamp()});
+alert("Budget saved.")
+}catch(e){alert(e.message)}
+};
+
+$("saveBill").onclick=async()=>{
+try{
+let title=$("billTitle").value.trim(),amount=+$("billAmount").value;
+if(!title||amount<=0)throw Error("Enter bill name and amount.");
+await addDoc(collection(db,"rooms",room,"fixedBills"),{title,amount,category:$("billCategory").value,payer:$("billPayer").value,createdBy:uid,createdAt:serverTimestamp()});
+$("billTitle").value="";$("billAmount").value="";
+alert("Fixed bill saved.")
+}catch(e){alert(e.message)}
+};
+
+$("recordSettlement").onclick=()=>alert("To record a UPI payment, use Pay part in the Balance section. The payment entry will appear only after you return and tap Payment Done.");
+
+$("saveUpi").onclick=async()=>{
+try{
+if(!admin)throw Error("Only Sajeed can manage UPI IDs.");
+let who=$("upiMember").value,id=$("upiValue").value.trim();
+if(!/^[\w.\-]{2,}@[\w]{2,}$/.test(id))throw Error("Enter a valid UPI ID, for example name@okaxis.");
+let next={...upis,[who]:id};
+await setDoc(doc(db,"rooms",room,"settings","upi"),{ids:next,updatedBy:uid,updatedAt:serverTimestamp()});
+$("upiValue").value="";alert("UPI ID saved.")
+}catch(e){alert(e.message)}
+};
+
+$("notifyBtn").onclick=async()=>{
+if(!("Notification"in window)){alert("This browser does not support notifications.");return}
+let p=await Notification.requestPermission();
+alert(p==="granted"?"Notifications enabled on this device.":"Notification permission was not granted.")
+};
+
+const paymentReturnBox=document.createElement("div");
+paymentReturnBox.id="fk6PaymentReturn";
+paymentReturnBox.hidden=true;
+paymentReturnBox.style.cssText="position:fixed;left:0;right:0;bottom:82px;z-index:99999";
+document.body.appendChild(paymentReturnBox);
+
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)showPaymentReturn()});
+window.addEventListener("focus",showPaymentReturn);
+window.addEventListener("pageshow",showPaymentReturn);
+
+const app=initializeApp(firebaseConfig),auth=getAuth(app);
+db=getFirestore(app);
+signInAnonymously(auth).catch(e=>msg(e.message));
+
+onAuthStateChanged(auth,async u=>{
+if(!u)return;
+uid=u.uid;
+let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");
+if(c&&n){
+try{
+let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
+if(r.exists()&&m.exists()&&m.data().name===n){
+room=c;admin=r.data().adminUid===uid;
+listen();msg("Welcome back, "+n+". Your flat is connected.");
+showPaymentReturn();return
+}
+localStorage.removeItem("fk6_room");
+localStorage.removeItem("fk6_name")
+}catch(e){msg("Could not restore your room: "+e.message);return}
+}
+msg("Connected. Join with Sajeed's room code.")
+});
