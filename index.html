@@ -7,122 +7,29 @@
 <link rel="manifest" href="manifest.webmanifest">
 <title>Flat Khata 6</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1020;--panel:#151f34;--panel2:#1b2940;--line:#2a3855;--text:#f4f6fc;--muted:#9ba8c2;--mint:#72e0bd;--red:#ff8291}
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 85% -10%,#263454 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
-main{max-width:680px;margin:auto}
-header{display:flex;align-items:center;gap:12px;padding:22px 2px 16px}
-.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#9cebd5,#4dbb9c);display:grid;place-items:center;color:#10251f;font-size:25px;font-weight:900;flex:none}
-h1{font-size:23px;line-height:1.15;margin:0}
-.sub{color:var(--muted);font-size:13px;margin-top:4px}
-.card{background:linear-gradient(145deg,#18233a,#121a2c);border:1px solid var(--line);border-radius:19px;padding:17px;margin:13px 0;box-shadow:0 12px 28px #03081735}
-#status{color:var(--mint);font-size:13px;background:#122a2a;border:1px solid #28514a;border-radius:13px;padding:12px 14px;margin:5px 0 14px}
-.hero{padding:22px;background:linear-gradient(125deg,#203d46,#1b2940 65%,#282e4a);border-color:#34545b}
-.eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b4e9d8;font-weight:800}
-.hero h2{font-size:27px;margin:7px 0 3px}
-.muted,small{color:var(--muted)}
-.hero p{margin:0;color:#c0d0d5}
-h2{font-size:20px;margin:0 0 12px}
-h3{font-size:16px;margin:0 0 12px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.metric{background:#151f34;border:1px solid var(--line);border-radius:17px;padding:15px}
-.metric span{font-size:12px;color:var(--muted)}
-.metric strong{display:block;font-size:25px;margin-top:5px}
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 0 12px;scrollbar-width:none}
-.tabs button{width:auto;white-space:nowrap;padding:11px 16px;border-radius:999px;background:#18233a;border:1px solid var(--line);color:#c4cde0;font-size:13px}
-.tabs button.active{background:var(--mint);color:#10251f;border-color:var(--mint)}
-.section{display:none}.section.active{display:block}
-input,select,button{box-sizing:border-box;width:100%;padding:12px;border-radius:12px;margin:5px 0;background:#0d1527;color:var(--text);border:1px solid #34425e;font:inherit;min-height:46px}
-button{background:var(--mint);color:#10251f;font-weight:800;border:0;cursor:pointer}
-button:disabled{opacity:.5}
-.secondary{background:#293752;color:white;border:1px solid #3b4b69}
-.danger{background:#663341;color:white}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #293653;overflow-wrap:anywhere}
-.row:last-child{border-bottom:0}
-.pos{color:var(--mint)}.neg{color:var(--red)}
-.members{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.members label{display:flex;align-items:center;gap:8px;padding:8px;background:#101a2d;border-radius:10px}
-.members input{width:18px;min-height:18px;margin:0;accent-color:var(--mint)}
-.hidden{display:none!important}
-#join{margin-top:14px}
-#join h3{font-size:19px}
-#roomLabel{font-size:12px;color:var(--muted);padding:0 3px;margin:8px 0}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.form-grid>*{min-width:0}
-#custom{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-#custom label{font-size:12px;color:var(--muted)}
-footer{text-align:center;padding:25px 0 8px;color:#687691;font-size:11px}
-@media(max-width:420px){body{padding-left:12px;padding-right:12px}.card{padding:14px}.hero h2{font-size:24px}}
+:root{color-scheme:dark;--bg:#0b1020;--text:#f4f6fc;--muted:#9ba8c2;--mint:#72e0bd;--line:#2a3855}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% -10%,#263454 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;padding:env(safe-area-inset-top) 14px 28px}
+main{max-width:680px;margin:auto}header{display:flex;align-items:center;gap:12px;padding:22px 2px 16px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#9cebd5,#4dbb9c);display:grid;place-items:center;color:#10251f;font-size:25px;font-weight:900}h1{font-size:23px;margin:0}.sub,.muted,small{color:var(--muted)}.sub{font-size:13px}
+.card{background:linear-gradient(145deg,#18233a,#121a2c);border:1px solid var(--line);border-radius:19px;padding:17px;margin:13px 0;box-shadow:0 12px 28px #03081735}#status{color:var(--mint);background:#122a2a;border:1px solid #28514a;border-radius:13px;padding:12px;margin:5px 0 14px;font-size:13px}
+.hero{padding:22px;background:linear-gradient(125deg,#203d46,#1b2940 65%,#282e4a);border-color:#34545b}.eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b4e9d8;font-weight:800}.hero h2{font-size:27px;margin:7px 0 3px}.hero p{margin:0;color:#c0d0d5}
+h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#151f34;border:1px solid var(--line);border-radius:17px;padding:15px}.metric span{font-size:12px;color:var(--muted)}.metric strong{display:block;font-size:25px;margin-top:5px}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 0 12px;scrollbar-width:none}.tabs button{width:auto;white-space:nowrap;padding:11px 16px;border-radius:999px;background:#18233a;border:1px solid var(--line);color:#c4cde0;font-size:13px}.tabs button.active{background:var(--mint);color:#10251f;border-color:var(--mint)}.section{display:none}.section.active{display:block}
+input,select,button{width:100%;padding:12px;border-radius:12px;margin:5px 0;background:#0d1527;color:var(--text);border:1px solid #34425e;font:inherit;min-height:46px}button{background:var(--mint);color:#10251f;font-weight:800;border:0}.secondary{background:#293752;color:white;border:1px solid #3b4b69}.danger{background:#663341;color:white}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #293653;overflow-wrap:anywhere}.row:last-child{border:0}.pos{color:var(--mint)}.neg{color:#ff8291}.members{display:grid;grid-template-columns:1fr 1fr;gap:4px}.members label{display:flex;align-items:center;gap:8px;padding:8px;background:#101a2d;border-radius:10px}.members input{width:18px;min-height:18px;margin:0}.hidden{display:none!important}#roomLabel{font-size:12px;color:var(--muted);padding:8px 3px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.form-grid>*{min-width:0}#custom{display:grid;grid-template-columns:1fr 1fr;gap:6px}#custom label{font-size:12px;color:var(--muted)}footer{text-align:center;padding:25px 0 8px;color:#687691;font-size:11px}
 </style>
 </head>
-<body>
-<main>
+<body><main>
 <header><div class="logo">₹</div><div><h1>Flat Khata 6</h1><div class="sub">Shared flat. Sorted accounts.</div></div></header>
 <div id="status">Starting secure sign-in...</div>
-<section id="join" class="card">
-<h3>Welcome to your flat</h3>
-<p class="muted">Join your shared room to see expenses and balances.</p>
-<select id="name" aria-label="Your name"></select>
-<input id="code" maxlength="5" placeholder="Enter 5-character room code" autocapitalize="characters">
-<button id="joinBtn">Join room</button>
-<p class="muted">Only Sajeed should create the room.</p>
-<button id="createBtn" class="secondary">Create room as Sajeed</button>
-</section>
-<div id="app" class="hidden">
-<div id="roomLabel"></div>
-<section class="card hero">
-<div class="eyebrow">Flat overview</div>
-<h2>Shared expenses, clearly tracked.</h2>
-<p>Everyone stays updated. Every rupee has a record.</p>
-</section>
-<div class="grid">
-<div class="metric"><span>Total shared expenses</span><strong id="total">₹0</strong></div>
-<div class="metric"><span>Members connected</span><strong id="memberCount">0/6</strong></div>
-</div>
-<nav class="tabs">
-<button data-tab="home" class="active">Overview</button>
-<button data-tab="add">Add expense</button>
-<button data-tab="away">Away days</button>
-<button data-tab="history">History</button>
-</nav>
-<section id="home" class="section active">
-<div class="card"><h3>Member balances</h3><div id="balances"></div></div>
-<div class="card"><h3>Suggested settlements</h3><div id="settle"></div></div>
-</section>
-<section id="add" class="section">
-<div class="card">
-<h3>Add an expense</h3>
-<input id="title" placeholder="What was the expense for?">
-<div class="form-grid">
-<input id="amount" type="number" min="0.01" step="0.01" placeholder="Amount in ₹">
-<select id="category"><option>Grocery</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select>
-<select id="payer" aria-label="Paid by"></select>
-<input id="date" type="date" aria-label="Start date">
-<input id="endDate" type="date" aria-label="End date">
-<select id="mode"><option value="equal">Equal split</option><option value="perday">Stay days split</option><option value="custom">Custom split</option></select>
-</div>
-<p class="muted">Choose members sharing this expense.</p>
-<div id="checks" class="members"></div>
-<div id="custom" class="hidden"></div>
-<button id="saveExpense">Save expense</button>
-</div>
-</section>
-<section id="away" class="section">
-<div class="card">
-<h3>Record away days</h3>
-<select id="awayName" aria-label="Member"></select>
-<div class="form-grid"><input id="awayStart" type="date" aria-label="Away from"><input id="awayEnd" type="date" aria-label="Return date"></div>
-<input id="reason" placeholder="Reason (optional)">
-<button id="saveAway">Save away period</button>
-</div>
-<div class="card"><h3>Away history</h3><div id="awayList"></div></div>
-</section>
-<section id="history" class="section">
-<div class="card"><h3>Expense history</h3><div id="historyList"></div></div>
-</section>
-</div>
-<footer>Thoughtfully built by Sajeed Ansari</footer>
-</main>
-<script type="module" src="app.js"></script>
-</body>
-</html>
+<section id="join" class="card"><h3>Welcome to your flat</h3><p class="muted">Join your shared room to see expenses and balances.</p><select id="name"></select><input id="code" maxlength="5" placeholder="Enter 5-character room code"><button id="joinBtn">Join room</button><p class="muted">Only Sajeed should create the room.</p><button id="createBtn" class="secondary">Create room as Sajeed</button></section>
+<div id="app" class="hidden"><div id="roomLabel"></div>
+<section class="card hero"><div class="eyebrow">Flat overview</div><h2>Shared expenses, clearly tracked.</h2><p>Everyone stays updated. Every rupee has a record.</p></section>
+<div class="grid"><div class="metric"><span>Total shared expenses</span><strong id="total">₹0</strong></div><div class="metric"><span>Members connected</span><strong id="memberCount">0/6</strong></div></div>
+<nav class="tabs"><button data-tab="home" class="active">Overview</button><button data-tab="add">Add expense</button><button data-tab="away">Away days</button><button data-tab="history">History</button><button data-tab="reports">Reports</button><button data-tab="bills">Fixed bills</button><button data-tab="settings">Budget & activity</button></nav>
+<section id="home" class="section active"><div class="card"><h3>Member balances</h3><div id="balances"></div></div><div class="card"><h3>Suggested settlements</h3><div id="settle"></div></div></section>
+<section id="add" class="section"><div class="card"><h3>Add an expense</h3><input id="title" placeholder="What was the expense for?"><div class="form-grid"><input id="amount" type="number" min=".01" step=".01" placeholder="Amount in ₹"><select id="category"><option>Grocery</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select><select id="payer"></select><input id="date" type="date"><input id="endDate" type="date"><select id="mode"><option value="equal">Equal split</option><option value="perday">Stay days split</option><option value="custom">Custom split</option></select></div><p class="muted">Choose members sharing this expense.</p><div id="checks" class="members"></div><div id="custom" class="hidden"></div><button id="saveExpense">Save expense</button></div></section>
+<section id="away" class="section"><div class="card"><h3>Record away days</h3><select id="awayName"></select><div class="form-grid"><input id="awayStart" type="date"><input id="awayEnd" type="date"></div><input id="reason" placeholder="Reason (optional)"><button id="saveAway">Save away period</button></div><div class="card"><h3>Away history</h3><div id="awayList"></div></div></section>
+<section id="history" class="section"><div class="card"><h3>Expense history</h3><div id="historyList"></div></div></section>
+<section id="reports" class="section"><div class="card"><h3>Monthly report</h3><input id="reportMonth" type="month"><div class="grid"><div class="metric"><span>Month total</span><strong id="monthTotal">₹0</strong></div><div class="metric"><span>Transactions</span><strong id="monthCount">0</strong></div></div><div id="categoryReport"></div><button id="exportCsv" class="secondary">Export monthly CSV</button></div></section>
+<section id="bills" class="section"><div class="card"><h3>Fixed bills</h3><p class="muted">Save rent, Wi-Fi, electricity and other recurring bills.</p><input id="billTitle" placeholder="Bill name"><div class="form-grid"><input id="billAmount" type="number" min="1" placeholder="Amount ₹"><select id="billCategory"><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Other</option></select></div><select id="billPayer"></select><button id="saveBill">Save fixed bill</button></div><div class="card"><h3>Saved bills</h3><div id="billList"></div></div></section>
+<section id="settings" class="section"><div class="card"><h3>Monthly budget</h3><input id="budgetAmount" type="number" min="1" placeholder="Monthly budget ₹"><button id="saveBudget">Save budget</button><div id="budgetStatus"></div></div><div class="card"><h3>Recent activity</h3><div id="activityList"></div></div><div class="card"><h3>Settlement history</h3><div class="form-grid"><select id="settleFrom"></select><select id="settleTo"></select><input id="settleAmount" type="number" min="1" placeholder="Amount ₹"></div><button id="recordSettlement">Record payment</button><div id="settlementList"></div></div></section>
+</div><footer>Thoughtfully built by Sajeed Ansari</footer></main><script type="module" src="app.js"></script></body></html>
