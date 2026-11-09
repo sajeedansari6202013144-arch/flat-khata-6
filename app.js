@@ -19,8 +19,27 @@ function balances(){let b=N.map(()=>0);expenses.forEach(e=>{b[N.indexOf(e.payer)
 function settlements(){let b=balances(),d=b.map((v,i)=>({i,a:-v})).filter(x=>x.a>.005),c=b.map((v,i)=>({i,a:v})).filter(x=>x.a>.005),o=[],i=0,j=0;while(i<d.length&&j<c.length){let a=Math.min(d[i].a,c[j].a);o.push(`${N[d[i].i]} pays ${N[c[j].i]} ${M(a)}`);d[i].a-=a;c[j].a-=a;if(d[i].a<.01)i++;if(c[j].a<.01)j++}return o}
 function render(){let b=balances();$("total").textContent=M(expenses.reduce((a,e)=>a+ +e.amount,0));$("memberCount").textContent=members.length+"/6";$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${n} <small>${b[i]>=0?"receives":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");$("settle").innerHTML=settlements().map(x=>`<div class="row">${x}</div>`).join("")||"All settled.";let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${e.payer}, ${e.date}</small><br><small>${e.shares.map(s=>s.name+" "+M(s.amount)).join(", ")}</small></span><span>${M(e.amount)} ${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;$("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";$("awayList").innerHTML=away.map(a=>`<div class="row">${a.name}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)))}
 function listen(){off.forEach(f=>f());off=[];off.push(onSnapshot(collection(db,"rooms",room,"expenses"),s=>{expenses=s.docs.map(d=>({id:d.id,...d.data()}));render()}),onSnapshot(collection(db,"rooms",room,"absences"),s=>{away=s.docs.map(d=>({id:d.id,...d.data()}));render()}),onSnapshot(collection(db,"rooms",room,"members"),s=>{members=s.docs.map(d=>d.data());$("memberCount").textContent=members.length+"/6";$("payer").innerHTML=N.map(n=>`<option>${n}</option>`).join("");$("awayName").innerHTML=N.map(n=>`<option>${n}</option>`).join("");$("checks").innerHTML=N.map(n=>`<label><input type="checkbox" class="part" value="${n}" checked> ${n}</label>`).join("");$("custom").innerHTML=N.map(n=>`<label>${n}<input class="share" data-name="${n}" type="number" placeholder="₹"></label>`).join("");render()}));$("join").classList.add("hidden");$("app").classList.remove("hidden");$("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · Member")}
-async function join(code,name){let r=await getDoc(doc(db,"rooms",code));if(!r.exists())throw Error("Room code not found.");let ms=await getDocs(collection(db,"rooms",code,"members"));if(ms.docs.some(d=>d.data().name===name&&d.id!==uid))throw Error(name+" is already registered on another device.");if(!ms.docs.some(d=>d.id===uid)&&ms.size>=6)throw Error("All six member slots are filled.");await setDoc(doc(db,"rooms",code,"members",uid),{uid,name,role:r.data().adminUid===uid?"admin":"member",joinedAt:serverTimestamp()});room=code;admin=r.data().adminUid===uid;listen()}
-$("createBtn").onclick=async()=>{try{if($("name").value!=="Sajeed")throw Error("Select Sajeed to create the room.");let code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%32]).join("");await setDoc(doc(db,"rooms",code),{name:"Flat Khata 6",adminUid:uid,createdAt:serverTimestamp()});await setDoc(doc(db,"rooms",code,"members",uid),{uid,name:"Sajeed",role:"admin",joinedAt:serverTimestamp()});room=code;admin=true;listen();alert("Room code: "+code+". Send this to your five flatmates.")}catch(e){alert(e.message)}};
+async function join(code,name){
+  let r=await getDoc(doc(db,"rooms",code));
+  if(!r.exists())throw Error("Room code not found.");
+  const memberRef=doc(db,"rooms",code,"members",uid);
+  const existing=await getDoc(memberRef);
+  if(existing.exists()){
+    if(existing.data().name!==name)throw Error("This phone is already registered as "+existing.data().name+".");
+    room=code;admin=r.data().adminUid===uid;
+    localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name",name);
+    listen();msg("Welcome back, "+name+". Your flat is connected.");
+    return;
+  }
+  let ms=await getDocs(collection(db,"rooms",code,"members"));
+  if(ms.docs.some(d=>d.data().name===name))throw Error(name+" is already registered on another device. Use that member's original phone/browser.");
+  if(ms.size>=6)throw Error("All six member slots are filled.");
+  await setDoc(memberRef,{uid,name,role:r.data().adminUid===uid?"admin":"member",joinedAt:serverTimestamp()});
+  room=code;admin=r.data().adminUid===uid;
+  localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name",name);
+  listen();
+}
+$("createBtn").onclick=async()=>{try{if($("name").value!=="Sajeed")throw Error("Select Sajeed to create the room.");let code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%32]).join("");await setDoc(doc(db,"rooms",code),{name:"Flat Khata 6",adminUid:uid,createdAt:serverTimestamp()});await setDoc(doc(db,"rooms",code,"members",uid),{uid,name:"Sajeed",role:"admin",joinedAt:serverTimestamp()});room=code;admin=true;localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name","Sajeed");listen();alert("Room code: "+code+". Send this to your five flatmates.")}catch(e){alert(e.message)}};
 $("joinBtn").onclick=async()=>{try{await join($("code").value.trim().toUpperCase(),$("name").value)}catch(e){alert(e.message)}};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});
 $("mode").onchange=()=>$("custom").classList.toggle("hidden",$("mode").value!=="custom");
@@ -28,4 +47,24 @@ $("saveExpense").onclick=async()=>{try{let amount=+$("amount").value,date=$("dat
 $("saveAway").onclick=async()=>{try{let start=$("awayStart").value,end=$("awayEnd").value;if(!start||!end||end<start)throw Error("Enter valid dates.");await addDoc(collection(db,"rooms",room,"absences"),{name:$("awayName").value,start,end,reason:$("reason").value,createdBy:uid,createdAt:serverTimestamp()});$("reason").value="";alert("Away dates synced.")}catch(e){alert(e.message)}};
 const cfgReady=Object.values(firebaseConfig).every(v=>!String(v).startsWith("PASTE_"));
 if(!cfgReady){msg("Firebase setup needed. Follow SETUP.txt in the project ZIP, then paste your Firebase config into app.js.");$("joinBtn").disabled=true;$("createBtn").disabled=true}
-else{const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getFirestore(app);signInAnonymously(auth).catch(e=>msg(e.message));onAuthStateChanged(auth,u=>{if(u){uid=u.uid;msg("Connected. Create a room or join with Sajeed's room code.")}})}
+else{
+  const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getFirestore(app);
+  signInAnonymously(auth).catch(e=>msg(e.message));
+  onAuthStateChanged(auth,async u=>{
+    if(!u)return;
+    uid=u.uid;
+    const savedRoom=localStorage.getItem("fk6_room"),savedName=localStorage.getItem("fk6_name");
+    if(savedRoom&&savedName){
+      try{
+        const r=await getDoc(doc(db,"rooms",savedRoom));
+        const m=await getDoc(doc(db,"rooms",savedRoom,"members",uid));
+        if(r.exists()&&m.exists()&&m.data().name===savedName){
+          room=savedRoom;admin=r.data().adminUid===uid;
+          listen();msg("Welcome back, "+savedName+". Your flat is connected.");return;
+        }
+        localStorage.removeItem("fk6_room");localStorage.removeItem("fk6_name");
+      }catch(e){msg("Could not restore your room: "+e.message);return;}
+    }
+    msg("Connected. Create a room or join with Sajeed's room code.");
+  });
+}
