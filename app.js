@@ -251,7 +251,7 @@ return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} 
 }).join("")||"All settled.";
 let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
-const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧",Wi-Fi:"⌁", "Gas cylinder":"♨",Other:"▤"};
+const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧","Wi-Fi":"⌁", "Gas cylinder":"♨",Other:"▤"};
 $("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
 $("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
