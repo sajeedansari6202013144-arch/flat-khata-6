@@ -161,6 +161,18 @@ if(!confirm("Cancel this pending payment request?"))return;
 try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.cancel),{status:"cancelled",cancelledAt:serverTimestamp(),cancelledBy:uid});alert("Payment request cancelled.")}
 catch(e){alert("Could not cancel. Update Firestore Rules first. "+e.message)}
 });
+let personBox=$("personWiseList");
+if(personBox){
+personBox.innerHTML=N.map(name=>{
+let paidExpenses=expenses.filter(e=>e.payer===name).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+let sentPayments=payments.filter(p=>p.from===name&&p.status==="confirmed").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+let expenseTotal=paidExpenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
+let transferTotal=sentPayments.reduce((sum,p)=>sum+Number(p.amount||0),0);
+let expenseRows=paidExpenses.map(e=>'<div class="row"><span><b>'+e.title+'</b><br><small>'+((e.date)||"Date not available")+' · '+(e.category||"Expense")+'</small></span><b>'+M(e.amount)+'</b></div>').join("");
+let transferRows=sentPayments.map(p=>'<div class="row"><span><b>Settlement to '+p.to+'</b><br><small>'+(p.date||"Date not available")+' · Confirmed payment</small></span><b>'+M(p.amount)+'</b></div>').join("");
+return '<div class="card" style="margin:12px 0"><h3>'+name+'</h3><div class="grid"><div class="metric"><span>Expenses paid</span><strong>'+M(expenseTotal)+'</strong></div><div class="metric"><span>Settlements sent</span><strong>'+M(transferTotal)+'</strong></div></div><p class="muted">Expenses paid by '+name+'</p>'+(expenseRows||'<p class="muted">No paid expenses recorded.</p>')+'<p class="muted">Confirmed settlements sent</p>'+(transferRows||'<p class="muted">No confirmed settlements yet.</p>')+'</div>'
+}).join("");
+}
 $("upiList").innerHTML=N.map(n=>`<div class="row">${n}<small>${upis[n]||"UPI ID not added"}</small></div>`).join("")
 }
 
