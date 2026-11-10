@@ -15,7 +15,7 @@ const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"];
 const $=id=>document.getElementById(id);
 const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 
-let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={};
+let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
 
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
 
@@ -179,7 +179,45 @@ $("personalHistory").innerHTML=personalRows.map(x=>'<div class="row"><span><b>'+
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
-function showTab(id){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
+
+function avatarFallback(name){return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" rx="60" fill="#1b4938"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="48" fill="#9af0c7" font-family="Arial">'+String(name||"?").slice(0,1).toUpperCase()+'</text></svg>')}
+function renderProfiles(){
+$("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small></div></div>'}).join("");
+const mine=profiles[uid]||{},img=$("profileAvatar");
+if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
+}
+async function loadMyProfile(){
+if(!uid||!room)return;
+const snap=await getDoc(doc(db,"rooms",room,"profiles",uid));
+profiles[uid]=snap.exists()?snap.data():{};
+const me=members.find(m=>m.uid===uid);
+$("profileName").value=me?.name||localStorage.getItem("fk6_name")||"";
+$("profileEmail").value=profiles[uid].email||"";
+$("profilePhone").value=profiles[uid].phone||"";
+renderProfiles();
+}
+$("profilePhotoInput").onchange=async e=>{
+const file=e.target.files?.[0];if(!file)return;
+if(!file.type.startsWith("image/")){alert("Choose an image.");return}
+if(file.size>8*1024*1024){alert("Choose a photo smaller than 8 MB.");return}
+try{
+const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+const img=new Image();img.onload=async()=>{const canvas=document.createElement("canvas"),max=360,scale=Math.min(1,max/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);const photo=canvas.toDataURL("image/jpeg",.72);profiles[uid]={...(profiles[uid]||{}),photo};$("profileAvatar").src=photo;};img.onerror=()=>alert("Could not read this image.");img.src=data;
+}catch(err){alert("Photo processing failed: "+err.message)}
+};
+$("saveProfile").onclick=async()=>{
+try{
+if(!uid||!room)throw Error("Join your flat first.");
+const me=members.find(m=>m.uid===uid);if(!me)throw Error("Member profile not found.");
+const photo=profiles[uid]?.photo||"";
+if(photo.length>850000)throw Error("Photo is too large. Choose another photo.");
+const data={uid,name:me.name,email:$("profileEmail").value.trim().slice(0,120),phone:$("profilePhone").value.trim().slice(0,30),photo,updatedAt:serverTimestamp()};
+await setDoc(doc(db,"rooms",room,"profiles",uid),data,{merge:true});
+profiles[uid]=data;renderProfiles();alert("Profile saved and synced for all flatmates.");
+}catch(e){alert("Could not save profile: "+e.message)}
+};
+
+function showTab(id){if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
 function render(){
 let b=balances();
@@ -269,8 +307,9 @@ else if(id==="name"&&currentMemberName)el.value=currentMemberName;
 });
 $("checks").innerHTML=N.map(n=>`<label><input type="checkbox" class="part" value="${n}" checked> ${n}</label>`).join("");
 $("custom").innerHTML=N.map(n=>`<label>${n}<input class="share" data-name="${n}" type="number" placeholder="₹"></label>`).join("");
-render()
+render();renderProfiles()
 }),
+onSnapshot(collection(db,"rooms",room,"profiles"),s=>{profiles={};s.docs.forEach(d=>profiles[d.id]=d.data());renderProfiles()}),
 onSnapshot(collection(db,"rooms",room,"fixedBills"),s=>{
 bills=s.docs.map(d=>({id:d.id,...d.data()}));renderExtras()
 }),
