@@ -1,1 +1,24 @@
-{"name":"Flat Khata 6","short_name":"Flat Khata","start_url":"./","display":"standalone","background_color":"#07130f","theme_color":"#07130f","icons":[]}
+{
+  "name": "Flat Khata 6",
+  "short_name": "Flat Khata",
+  "id": "/",
+  "start_url": "/flat-khata-6/",
+  "scope": "/flat-khata-6/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#06110e",
+  "theme_color": "#06110e",
+  "description": "Shared flat expense manager. Plan, split, track and settle.",
+  "icons": [
+    {
+      "src": "/flat-khata-6/icons/flat-khata-6.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
