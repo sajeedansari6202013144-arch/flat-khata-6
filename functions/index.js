@@ -6,8 +6,9 @@ initializeApp();
 const db=getFirestore();
 const REGION="asia-south2";
 const SKIP=new Set(["pushTokens","profiles"]);
-function actorOf(d){
- return d.createdBy||d.updatedBy||d.confirmedBy||d.cancelledBy||null;
+function actorOf(d,kind){
+ if(kind==="updated")return d.confirmedBy||d.cancelledBy||d.updatedBy||d.createdBy||null;
+ return d.createdBy||d.updatedBy||null;
 }
 function noticeFor(collection,data,eventType){
  const who=data.createdByName||data.name||data.from||"A flatmate";
@@ -32,7 +33,7 @@ async function sendRoomNotice(event,kind){
  const before=event.data?.before?.data?.()||null;
  const data=event.data?.after?.data?.()||event.data?.data?.()||{};
  if(kind==="updated"&&before&&before.status===data.status&&collection==="settlements")return;
- const actor=actorOf(data);
+ const actor=actorOf(data,kind);
  const tokensSnap=await db.collection("rooms").doc(roomId).collection("pushTokens").get();
  const targets=tokensSnap.docs.filter(x=>x.id!==actor&&x.data().token);
  if(!targets.length)return;
