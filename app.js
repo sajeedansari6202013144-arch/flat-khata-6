@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -21,7 +21,7 @@ $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
 
 const authCard=document.createElement("div");
 authCard.className="card";
-authCard.innerHTML='<h3>Secure your account for app access</h3><p class="muted">Use the same email and password on Chrome and the installed Android app. This keeps the same flat member identity.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Create password (6+ characters)"><button id="fk6LinkAccount">Secure this device account</button><button id="fk6SignIn" class="secondary">Already secured? Sign in</button><p class="muted" id="fk6AuthMsg">Do not share your password with anyone.</p>';
+authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><button id="fk6LinkAccount">Secure this device account</button><button id="fk6SignIn" class="secondary">Sign in</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
 function mountAuthCard(target){
 if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
@@ -36,6 +36,7 @@ $("fk6AuthMsg").textContent="Account secured. Your existing member ID and room r
 alert("Account secured successfully. Your existing room identity is preserved.");
 }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
 };
+$("fk6Logout").onclick=async()=>{try{if(!confirm("Log out from this device? You will need to sign in again to open your flat."))return;localStorage.setItem("fk6_logged_out","1");await signOut(auth);}catch(e){alert("Could not log out: "+e.message)}};
 $("fk6SignIn").onclick=async()=>{
 try{
 let email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
@@ -513,11 +514,29 @@ window.addEventListener("pageshow",showPaymentReturn);
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app);
 db=getFirestore(app);
-signInAnonymously(auth).catch(e=>msg(e.message));
+await setPersistence(auth,browserLocalPersistence);
 
 onAuthStateChanged(auth,async u=>{
-if(!u)return;
+if(!u){
+uid=undefined;room=undefined;admin=false;
+$("app").classList.add("hidden");$("join").classList.remove("hidden");
+mountAuthCard($("join"));
+$("fk6LinkAccount").classList.remove("hidden");
+$("fk6SignIn").classList.remove("hidden");
+$("fk6Logout").classList.add("hidden");
+$("fk6AuthTitle").textContent="Account access";
+$("fk6AuthDescription").textContent="Sign in once. Your account will stay signed in on this device until you log out.";
+if(localStorage.getItem("fk6_logged_out"))msg("You are logged out. Sign in to continue.");
+return;
+}
+localStorage.removeItem("fk6_logged_out");
 uid=u.uid;
+$("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
+$("fk6SignIn").classList.toggle("hidden",!u.isAnonymous);
+$("fk6Logout").classList.toggle("hidden",u.isAnonymous);
+$("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signed in";
+$("fk6AuthDescription").textContent=u.isAnonymous?"Secure this account once to keep the same flat identity across devices.":"You are signed in on this device. The app will open directly next time.";
+$("fk6AuthMsg").textContent=u.isAnonymous?"Secure your account to use the same identity on another device.":"Login saved. You do not need to sign in again unless you log out.";
 let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");
 if(c&&n){
 try{
@@ -527,12 +546,12 @@ room=c;admin=r.data().adminUid===uid;
 listen();msg("Welcome back, "+n+". Your flat is connected.");
 showPaymentReturn();return
 }
-localStorage.removeItem("fk6_room");
-localStorage.removeItem("fk6_name")
 }catch(e){msg("Could not restore your room: "+e.message);return}
 }
-msg("Connected. Join with Sajeed's room code.")
+$("app").classList.add("hidden");$("join").classList.remove("hidden");mountAuthCard($("join"));
+msg("Signed in. Join with your flat room code.");
 });
+if(!auth.currentUser&&!localStorage.getItem("fk6_logged_out"))signInAnonymously(auth).catch(e=>msg(e.message));
 
 
 /* Master upgrade: groups, private wallet receipts and recurring bill scheduler */
