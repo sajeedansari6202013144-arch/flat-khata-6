@@ -398,6 +398,12 @@ $("saveNotificationPrefs").onclick=()=>{localStorage.setItem("fk6_activity_notif
 $("activityNotifications").checked=localStorage.getItem("fk6_activity_notifications")!=="0";$("paymentNotifications").checked=localStorage.getItem("fk6_payment_notifications")!=="0";
 function showTab(id){if(id==="settlement"){render();}if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
+function expenseAddedTime(e){
+ const raw=e?.createdAt;
+ const date=raw?.toDate?raw.toDate():raw?.seconds?new Date(raw.seconds*1000):raw instanceof Date?raw:null;
+ return date&&!Number.isNaN(date.getTime())?date.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"Time unavailable";
+}
+
 function render(){
 let b=balances();
 $("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));
@@ -413,10 +419,10 @@ $("settle").innerHTML=ss.map(x=>{
 let pending=payments.filter(p=>p.status==="pending"&&p.from===x.from&&p.to===x.to).reduce((a,p)=>a+Number(p.amount||0),0),left=Math.max(0,x.amount-pending);
 return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`
 }).join("")||"All settled.";
-let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
+let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>Added at ${expenseAddedTime(e)}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
 const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧","Wi-Fi":"⌁", "Gas cylinder":"♨",Other:"▤"};
-if($("recentList"))$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
+if($("recentList"))$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+' · Added '+expenseAddedTime(e)+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
 $("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
 document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
