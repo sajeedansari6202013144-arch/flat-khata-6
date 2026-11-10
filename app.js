@@ -22,7 +22,10 @@ $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
 const authCard=document.createElement("div");
 authCard.className="card";
 authCard.innerHTML='<h3>Secure your account for app access</h3><p class="muted">Use the same email and password on Chrome and the installed Android app. This keeps the same flat member identity.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Create password (6+ characters)"><button id="fk6LinkAccount">Secure this device account</button><button id="fk6SignIn" class="secondary">Already secured? Sign in</button><p class="muted" id="fk6AuthMsg">Do not share your password with anyone.</p>';
-$("join").appendChild(authCard);
+function mountAuthCard(target){
+if(target&&authCard.parentElement!==target)target.appendChild(authCard);
+}
+mountAuthCard($("join"));
 $("fk6LinkAccount").onclick=async()=>{
 try{
 let user=auth.currentUser,email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
@@ -237,6 +240,7 @@ upis=s.exists()?(s.data().ids||{}):{};renderExtras()
 );
 $("join").classList.add("hidden");
 $("app").classList.remove("hidden");
+mountAuthCard($("settings"));
 $("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · Member")
 }
 
