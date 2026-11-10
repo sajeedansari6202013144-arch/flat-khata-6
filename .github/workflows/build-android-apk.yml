@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - 'android/**'
+      - 'app.js'
+      - 'index.html'
+      - 'manifest.webmanifest'
       - '.github/workflows/build-android-apk.yml'
 jobs:
   build:
