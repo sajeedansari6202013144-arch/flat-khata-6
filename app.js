@@ -268,7 +268,12 @@ profiles[uid]=data;renderProfiles();alert("Profile saved and synced for all flat
 }catch(e){alert("Could not save profile: "+e.message)}
 };
 
-function showTab(id){if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
+function applyAppearance(){const theme=localStorage.getItem("fk6_theme")||"light";const size=localStorage.getItem("fk6_font")||"medium";const dark=theme==="dark"||(theme==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.body.classList.toggle("fk-dark",dark);document.body.style.fontSize=size==="small"?"13px":size==="large"?"16px":"14px";if($("themePreference"))$("themePreference").value=theme;if($("fontPreference"))$("fontPreference").value=size;}
+applyAppearance();
+$("saveAppearance").onclick=()=>{localStorage.setItem("fk6_theme",$("themePreference").value);localStorage.setItem("fk6_font",$("fontPreference").value);applyAppearance();alert("Appearance preferences saved.");};
+$("saveNotificationPrefs").onclick=()=>{localStorage.setItem("fk6_activity_notifications",$("activityNotifications").checked?"1":"0");localStorage.setItem("fk6_payment_notifications",$("paymentNotifications").checked?"1":"0");alert("Notification preferences saved.");};
+$("activityNotifications").checked=localStorage.getItem("fk6_activity_notifications")!=="0";$("paymentNotifications").checked=localStorage.getItem("fk6_payment_notifications")!=="0";
+function showTab(id){if(id==="settlement"){id="home";setTimeout(()=>document.getElementById("settle")?.scrollIntoView({behavior:"smooth",block:"center"}),180);}if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
 function render(){
 let b=balances();
