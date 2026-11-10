@@ -127,9 +127,8 @@ input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
 <div class="home-panel balance-panel">
  <div class="home-panel-head"><h2>Member Balance</h2><button data-go="home">⇄ Settle Up</button></div>
  <div id="balances"></div>
- <div style="border-top:1px solid #dce5e8;margin-top:14px;padding-top:12px"><h3 style="margin:4px 0 10px">Settlement History</h3><div id="settlementList"></div></div>
+ <div style="border-top:1px solid #dce5e8;margin-top:14px;padding-top:16px"><h3 style="margin:4px 0 10px">Settle Up</h3><p class="muted">Pay your outstanding balance in full or in parts.</p><div id="settle"></div><h3 style="margin:20px 0 10px">Settlement History</h3><div id="settlementList"></div></div>
 </div>
-<div class="home-hidden-data"><div id="settle"></div></div>
 </section>
 <section id="add" class="section"><div class="card"><h3>Add expense</h3><input id="title" placeholder="Expense title"><div class="form-grid"><input id="amount" type="number" min=".01" step=".01" placeholder="Amount ₹"><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select><select id="payer"></select><input id="date" type="date"><input id="endDate" type="date"><select id="mode"><option value="equal">Equal split</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div><p class="muted">Who should share this expense?</p><div id="checks" class="members"></div><div id="custom" class="hidden"></div><button id="saveExpense">＋ Add expense</button></div></section>
 <section id="away" class="section"><div class="card"><h3>Away mode</h3><select id="awayName"></select><div class="form-grid"><input id="awayStart" type="date"><input id="awayEnd" type="date"></div><input id="reason" placeholder="Reason (optional)"><button id="saveAway">Save away days</button></div><div class="card"><h3>Away history</h3><div id="awayList"></div></div></section>
