@@ -20,18 +20,20 @@ const firebaseApp=initializeApp(firebaseConfig);
 auth=getAuth(firebaseApp);
 db=getFirestore(firebaseApp);
 
-$("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
+
 
 const authCard=document.createElement("div");
 authCard.className="card";
-authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><button id="fk6LinkAccount">Secure this device account</button><button id="fk6SignIn" class="secondary">Sign in</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
+authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><button id="fk6LinkAccount">Link this existing member account once</button><button id="fk6SignIn" class="secondary">Continue to my flat</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
 function mountAuthCard(target){
 if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
 mountAuthCard($("join"));
 $("fk6LinkAccount").onclick=async()=>{
 try{
-let user=auth.currentUser,email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
+let user=auth.currentUser,email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value,code=$("code").value.trim().toUpperCase();
+ if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code first.");
+ localStorage.setItem("fk6_room",code);
 if(!user||!user.isAnonymous)throw Error("This device is not using an anonymous account. Use Sign in instead.");
 if(!email||password.length<6)throw Error("Enter a valid email and password of at least 6 characters.");
 await linkWithCredential(user,EmailAuthProvider.credential(email,password));
@@ -41,13 +43,33 @@ alert("Account secured successfully. Your existing room identity is preserved.")
 };
 $("fk6Logout").onclick=async()=>{try{if(!confirm("Log out from this device? You will need to sign in again to open your flat."))return;localStorage.setItem("fk6_logged_out","1");await signOut(auth);}catch(e){alert("Could not log out: "+e.message)}};
 if($("logoutMain"))$("logoutMain").onclick=$("fk6Logout").onclick;
+async function connectRoomForSignedInUser(code){
+ code=String(code||"").trim().toUpperCase();
+ if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
+ const user=auth.currentUser;
+ if(!user||user.isAnonymous)throw Error("Sign in with your email and password first.");
+ const roomSnap=await getDoc(doc(db,"rooms",code));
+ if(!roomSnap.exists())throw Error("Room code not found.");
+ const memberSnap=await getDoc(doc(db,"rooms",code,"members",user.uid));
+ if(!memberSnap.exists())throw Error("This email is not linked to a flatmate yet. On the old device, tap Link this existing member account once using this email and password. This keeps the existing member identity.");
+ const memberName=memberSnap.data().name;
+ if(!memberName)throw Error("Your member profile is incomplete. Ask the room admin to check it.");
+ room=code;uid=user.uid;admin=roomSnap.data().adminUid===uid;
+ localStorage.setItem("fk6_room",code);localStorage.setItem("fk6_name",memberName);
+ listen();msg("Welcome back, "+memberName+". Your flat is connected.");
+ $("join").classList.add("hidden");$("app").classList.remove("hidden");showPaymentReturn();
+}
 $("fk6SignIn").onclick=async()=>{
-try{
-let email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
-if(!email||!password)throw Error("Enter your email and password.");
-await signInWithEmailAndPassword(auth,email,password);
-$("fk6AuthMsg").textContent="Signed in. Restoring your flat…";
-}catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
+ try{
+ const email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value,code=$("code").value.trim().toUpperCase();
+ if(!email||!password)throw Error("Enter your email and password.");
+ if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
+ localStorage.setItem("fk6_room",code);
+ $("fk6AuthMsg").textContent="Signing in and connecting your flat…";
+ const user=auth.currentUser;
+ if(user&&!user.isAnonymous)await connectRoomForSignedInUser(code);
+ else await signInWithEmailAndPassword(auth,email,password);
+ }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
 };
 
 
@@ -401,23 +423,7 @@ localStorage.setItem("fk6_name",name);
 listen()
 }
 
-$("createBtn").onclick=async()=>{
-try{
-if($("name").value!=="Sajeed")throw Error("Select Sajeed to create the room.");
-let code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%32]).join("");
-await setDoc(doc(db,"rooms",code),{name:"Flat Khata 6",adminUid:uid,createdAt:serverTimestamp()});
-await setDoc(doc(db,"rooms",code,"members",uid),{uid,name:"Sajeed",role:"admin",joinedAt:serverTimestamp()});
-room=code;admin=true;
-localStorage.setItem("fk6_room",code);
-localStorage.setItem("fk6_name","Sajeed");
-listen();alert("Room code: "+code)
-}catch(e){alert(e.message)}
-};
 
-$("joinBtn").onclick=async()=>{
-try{await join($("code").value.trim().toUpperCase(),$("name").value)}
-catch(e){alert(e.message)}
-};
 
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="personal"&&!personalUnlocked)personalLock();showTab(b.dataset.tab)});
 $("personalUnlock").onclick=()=>personalUnlock().catch(e=>alert(e.message));
@@ -557,22 +563,21 @@ if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
 $("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signed in";
 $("fk6AuthDescription").textContent=u.isAnonymous?"Secure this account once to keep the same flat identity across devices.":"You are signed in on this device. The app will open directly next time.";
 $("fk6AuthMsg").textContent=u.isAnonymous?"Secure your account to use the same identity on another device.":"Login saved. You do not need to sign in again unless you log out.";
-let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");
-if(c&&n&&uid&&db){
-try{
-let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
-if(r.exists()&&m.exists()&&m.data()?.name===n){
-room=c;admin=r.data().adminUid===uid;
-listen();msg("Welcome back, "+n+". Your flat is connected.");
-$("join").classList.add("hidden");$("app").classList.remove("hidden");
-showPaymentReturn();return
-}
-}catch(e){msg("Could not restore your room: "+e.message);return}
+let c=localStorage.getItem("fk6_room");
+if(c&&uid&&db&&!u.isAnonymous){
+ try{
+  let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
+  if(r.exists()&&m.exists()&&m.data()?.name){
+   room=c;admin=r.data().adminUid===uid;localStorage.setItem("fk6_name",m.data().name);
+   listen();msg("Welcome back, "+m.data().name+". Your flat is connected.");
+   $("join").classList.add("hidden");$("app").classList.remove("hidden");showPaymentReturn();return;
+  }
+ }catch(e){msg("Could not restore your room: "+e.message)}
 }
 $("app").classList.add("hidden");$("join").classList.remove("hidden");mountAuthCard($("join"));
-msg("Signed in. Join with your flat room code.");
+if(!u.isAnonymous)$("fk6AuthMsg").textContent="Enter your room code and tap Continue. Your login stays saved on this device.";
 });
-if(!auth.currentUser&&!localStorage.getItem("fk6_logged_out"))signInAnonymously(auth).catch(e=>msg(e.message));
+
 
 
 /* Master upgrade: groups, private wallet receipts and recurring bill scheduler */
