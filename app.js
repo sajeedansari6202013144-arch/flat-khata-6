@@ -293,7 +293,7 @@ away=s.docs.map(d=>({id:d.id,...d.data()}));
 render();notifyActivity("away",s.docChanges())
 }),
 onSnapshot(collection(db,"rooms",room,"members"),s=>{
-members=s.docs.map(d=>d.data());
+members=s.docs.map(d=>({...d.data(),uid:d.id}));
 $("memberCount").textContent=members.length+"/6";
 const currentMemberName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"";
 const priorityNames=currentMemberName?[currentMemberName,...N.filter(n=>n!==currentMemberName)]:N;
