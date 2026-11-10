@@ -444,11 +444,12 @@ setInterval(()=>{if(personalUnlocked&&Date.now()-personalLastTouch>120000)person
 
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
 const menuBackdrop=$("homeMenuBackdrop");
-$("homeMenuTrigger").onclick=()=>menuBackdrop.classList.remove("hidden");
-$("homeMenuClose").onclick=()=>menuBackdrop.classList.add("hidden");
-menuBackdrop.onclick=e=>{if(e.target===menuBackdrop)menuBackdrop.classList.add("hidden")};
-menuBackdrop.querySelectorAll("[data-menu-go]").forEach(b=>b.onclick=()=>{menuBackdrop.classList.add("hidden");showTab(b.dataset.menuGo)});
-$("homeMenuLogout").onclick=()=>{menuBackdrop.classList.add("hidden");showTab("profile");setTimeout(()=>$("logoutMain")?.click(),100)};
+document.body.appendChild(menuBackdrop);
+$("homeMenuTrigger").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();menuBackdrop.classList.remove("hidden")});
+$("homeMenuClose").addEventListener("click",()=>menuBackdrop.classList.add("hidden"));
+menuBackdrop.addEventListener("click",e=>{if(e.target===menuBackdrop)menuBackdrop.classList.add("hidden")});
+menuBackdrop.querySelectorAll("[data-menu-go]").forEach(b=>b.addEventListener("click",()=>{menuBackdrop.classList.add("hidden");showTab(b.dataset.menuGo)}));
+$("homeMenuLogout").addEventListener("click",()=>{menuBackdrop.classList.add("hidden");showTab("profile");setTimeout(()=>$("logoutMain")?.click(),100)});
 $("notifyBtnHome").onclick=()=>$("notifyBtn").click();
 $("copyRoomCode").onclick=()=>{if(room&&navigator.clipboard?.writeText)navigator.clipboard.writeText(room).then(()=>alert("Room code copied: "+room)).catch(()=>alert("Room code: "+room));else alert("Room code: "+room)};
 
