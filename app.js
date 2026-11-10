@@ -217,7 +217,7 @@ function personLabel(name){
 const m=members.find(x=>x.name===name),p=m?profiles[m.uid]||{}:{};
 return '<span class="person-label"><img src="'+(p.photo||avatarFallback(name))+'" alt="">'+escapeHtml(name)+'</span>';
 }
-function upiQrSource(value){const id=String(value||"").trim();if(!/^[\\w.\\-]{2,}@[\\w]{2,}$/.test(id))return "";const uri="upi://pay?pa="+encodeURIComponent(id)+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6");return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(uri)}
+function upiQrSource(value){const id=String(value||"").trim();if(!/^[\w.\-]{2,}@[\w]{2,}$/.test(id))return "";const uri="upi://pay?pa="+encodeURIComponent(id)+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6");return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(uri)}
 function renderMyUpiQr(){const el=$("profileUpiQr"),id=$("profileUpi")?.value.trim()||"",src=upiQrSource(id);if(el){el.src=src;el.style.display=src?"block":"none"} }
 $("profileUpi").addEventListener("input",renderMyUpiQr);
 function renderProfiles(){
@@ -260,7 +260,7 @@ if(!uid||!room)throw Error("Join your flat first.");
 const me=members.find(m=>m.uid===uid);if(!me)throw Error("Member profile not found.");
 const photo=profiles[uid]?.photo||"";
  const upi=$("profileUpi").value.trim();
- if(upi&&!/^[\\w.\\-]{2,}@[\\w]{2,}$/.test(upi))throw Error("Enter a valid UPI ID, for example name@okaxis.");
+ if(upi&&!/^[\w.\-]{2,}@[\w]{2,}$/.test(upi))throw Error("Enter a valid UPI ID, for example name@okaxis.");
 if(photo.length>850000)throw Error("Photo is too large. Choose another photo.");
 const data={uid,name:me.name,email:$("profileEmail").value.trim().slice(0,120),phone:$("profilePhone").value.trim().slice(0,30),upi,photo,updatedAt:serverTimestamp()};
 await setDoc(doc(db,"rooms",room,"profiles",uid),data,{merge:true});
