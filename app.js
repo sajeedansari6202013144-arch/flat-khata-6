@@ -122,35 +122,55 @@ if(c[j].a<.01)j++;
 return o;
 }
 
+async function compressSettlementProof(file){
+if(!file||!file.type.startsWith("image/"))throw Error("Choose a payment proof image.");
+if(file.size>10*1024*1024)throw Error("Image must be smaller than 10 MB.");
+const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+const img=await new Promise((resolve,reject)=>{const x=new Image();x.onload=()=>resolve(x);x.onerror=reject;x.src=data});
+const max=900,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement("canvas");
+canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+const out=canvas.toDataURL("image/jpeg",.68);
+if(out.length>700000)throw Error("Image is too large after compression. Choose a smaller screenshot.");
+return out;
+}
 async function payLink(to,maximum){
-let from=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
+const from=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 if(!from){alert("Your member profile could not be identified.");return;}
-let ownDue=settlements().find(x=>x.from===from&&x.to===to);
-if(!ownDue){alert("You can only pay your own pending balance.");return;}
-let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to).reduce((a,p)=>a+Number(p.amount||0),0);
-let available=Math.max(0,Number(ownDue.amount)-pending);
-if(available<=0){alert("Your payment is already awaiting confirmation.");return;}
-let amount=Number(prompt("Enter amount to pay now. Remaining payable: ₹"+available.toFixed(2),String(Math.min(50,available))));
-if(!Number.isFinite(amount)||amount<=0||amount>available){alert("Enter a valid amount up to ₹"+available.toFixed(2));return;}
-let receiver=members.find(m=>m.name===to);
+const ownDue=settlements().find(x=>x.from===from&&x.to===to);
+if(!ownDue){alert("You can only submit your own pending settlement.");return;}
+const pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to).reduce((a,p)=>a+Number(p.amount||0),0);
+const available=Math.max(0,Number(ownDue.amount)-pending);
+if(available<=0){alert("Your payment is already awaiting receiver confirmation.");return;}
+const receiver=members.find(m=>m.name===to);
 if(!receiver){alert("Recipient member not found.");return;}
-let v=(profiles[receiver.uid]?.upi||upis[to]||"").trim();
-if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it.");return;}
-let draft={from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()};
-let upiUri="upi://pay?pa="+encodeURIComponent(v)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");
-let overlay=document.createElement("div");
-overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto";
-let panel=document.createElement("div");
-panel.style.cssText="background:#fff;color:#17231e;border-radius:18px;padding:18px;width:min(100%,390px);text-align:center;max-height:92vh;overflow:auto";
-panel.innerHTML='<h2 style="margin:4px 0 8px">Pay '+to+'</h2><h1 style="font-size:30px;margin:6px 0">₹'+amount.toFixed(2)+'</h1><p style="overflow-wrap:anywhere;font-weight:600;margin:8px 0">'+v+'</p><img id="fk6PayQr" alt="UPI payment QR code" style="width:240px;height:240px;max-width:100%;object-fit:contain;display:block;margin:12px auto" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent(upiUri)+'"><p style="font-size:13px;color:#46554d">Scan this QR using another phone. Check the recipient name and amount in your UPI app before paying.</p><button id="fk6Copy" style="width:100%;padding:12px;border:0;border-radius:10px;background:#e9f2ed;margin:5px 0">Copy UPI ID</button><a id="fk6OpenUpi" href="'+upiUri+'" style="display:block;padding:13px;border-radius:10px;background:#167d55;color:white;text-decoration:none;font-weight:700;margin:6px 0">Open UPI app</a><button id="fk6PaidQr" style="width:100%;padding:12px;border:0;border-radius:10px;background:#d7f4e5;color:#075b3b;font-weight:700;margin:5px 0">I have paid</button><button id="fk6CloseQr" style="width:100%;padding:11px;border:0;border-radius:10px;background:#eee;margin-top:5px">I have not paid, close</button><p style="font-size:11px;color:#65736b">The app cannot verify bank payment automatically. The recipient must confirm receipt.</p>';
+const v=(profiles[receiver.uid]?.upi||upis[to]||"").trim();
+const overlay=document.createElement("div");
+overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto";
+const panel=document.createElement("div");
+panel.style.cssText="background:#fff;color:#17231e;border-radius:18px;padding:18px;width:min(100%,410px);max-height:94vh;overflow:auto";
+panel.innerHTML='<h2 style="margin:2px 0 6px">Settle with '+escapeHtml(to)+'</h2><p style="color:#52645b;font-size:13px">Remaining balance: '+M(available)+'</p><label style="display:block;font-weight:700;margin:12px 0 5px">Payment method</label><select id="fk6PayMode" style="width:100%;padding:12px;border:1px solid #ccd8d2;border-radius:10px"><option value="upi">UPI payment</option><option value="cash">Cash payment</option></select><label style="display:block;font-weight:700;margin:12px 0 5px">Amount paid (₹)</label><input id="fk6PayAmount" type="number" min="1" max="'+available+'" step=".01" value="'+Math.min(available,Math.max(1,Math.min(50,available))).toFixed(2)+'" style="width:100%;padding:12px;border:1px solid #ccd8d2;border-radius:10px"><div id="fk6UpiDetails" style="text-align:center;margin:12px 0">'+(v?'<p style="font-weight:700;overflow-wrap:anywhere">'+escapeHtml(v)+'</p><img id="fk6PayQr" alt="Recipient UPI QR" style="width:210px;height:210px;object-fit:contain;display:block;margin:8px auto" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent("upi://pay?pa="+v+"&cu=INR&tn=Flat%20Khata%206")+'"><a id="fk6OpenUpi" href="#" style="display:inline-block;background:#087d75;color:white;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Open UPI app</a>':'<p style="color:#a33">Receiver has not added a UPI ID yet.</p>')+'</div><label style="display:block;font-weight:700;margin:12px 0 5px">Payment screenshot / cash proof</label><input id="fk6ProofFile" type="file" accept="image/*" style="width:100%;padding:9px;border:1px solid #ccd8d2;border-radius:10px"><p style="font-size:12px;color:#65736b">Add a screenshot for UPI or a photo of cash handover. Receiver will review and confirm.</p><button id="fk6SubmitClaim" style="width:100%;padding:13px;border:0;border-radius:11px;background:#087d75;color:white;font-weight:700">Send payment for confirmation</button><button id="fk6CloseClaim" style="width:100%;padding:11px;border:0;border-radius:11px;background:#edf1ef;margin-top:8px">Cancel</button>';
 overlay.appendChild(panel);document.body.appendChild(overlay);
-panel.querySelector("#fk6Copy").onclick=async()=>{try{await navigator.clipboard.writeText(v);alert("UPI ID copied. Open PhonePe and pay manually.")}catch(e){prompt("Copy this UPI ID",v)}};
-panel.querySelector("#fk6OpenUpi").onclick=()=>localStorage.setItem("fk6_payment_draft",JSON.stringify(draft));
-panel.querySelector("#fk6PaidQr").onclick=()=>{localStorage.setItem("fk6_payment_draft",JSON.stringify(draft));overlay.remove();showPaymentReturn()};
-panel.querySelector("#fk6CloseQr").onclick=()=>overlay.remove();
+const mode=panel.querySelector("#fk6PayMode"),upi=panel.querySelector("#fk6UpiDetails"),amount=panel.querySelector("#fk6PayAmount"),proof=panel.querySelector("#fk6ProofFile");
+mode.onchange=()=>{upi.style.display=mode.value==="upi"?"block":"none";};
+const open=panel.querySelector("#fk6OpenUpi");
+if(open)open.onclick=e=>{e.preventDefault();const n=Number(amount.value);if(!Number.isFinite(n)||n<=0||n>available){alert("Enter a valid amount.");return;}const uri="upi://pay?pa="+encodeURIComponent(v)+"&am="+encodeURIComponent(n.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");window.location.href=uri;};
+panel.querySelector("#fk6CloseClaim").onclick=()=>overlay.remove();
+panel.querySelector("#fk6SubmitClaim").onclick=async()=>{
+const n=Number(amount.value),method=mode.value,file=proof.files?.[0],btn=panel.querySelector("#fk6SubmitClaim");
+if(!Number.isFinite(n)||n<=0||n>available){alert("Enter an amount up to "+M(available));return;}
+if(method==="upi"&&!v){alert("Receiver has not added a UPI ID.");return;}
+if(!file){alert("Please attach payment proof.");return;}
+btn.disabled=true;btn.textContent="Preparing proof…";
+try{
+const proofImage=await compressSettlementProof(file);
+await addDoc(collection(db,"rooms",room,"settlements"),{from,to,amount:n,status:"pending",paymentMode:method,proofImage,recipientUid:receiver.uid,recipientName:to,createdBy:uid,createdByName:from,createdAt:serverTimestamp(),date:new Date().toISOString().slice(0,10)});
+overlay.remove();alert("Payment proof sent. "+to+" must review and accept it before the balance changes.");
+}catch(e){btn.disabled=false;btn.textContent="Send payment for confirmation";alert("Could not submit payment proof: "+e.message);}
+};
 overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
-panel.querySelector("#fk6PayQr").onerror=function(){this.style.display="none";let note=document.createElement("p");note.textContent="QR image could not load. Use Copy UPI ID to pay manually.";panel.insertBefore(note,panel.querySelector("#fk6Copy"))};
-}function showPaymentReturn(){
+}
+function showPaymentReturn(){
 let raw=localStorage.getItem("fk6_payment_draft");
 let box=document.getElementById("fk6PaymentReturn");
 if(!raw||!box)return;
@@ -358,7 +378,7 @@ if(budget&&spent>budget&&localStorage.getItem("fk6_budget_alert_"+month)!=="yes"
 let acts=[...expenses.map(e=>({t:e.createdAt?.toDate?.()||new Date(e.date||Date.now()),s:`${e.createdByName||e.payer} added ${e.title} · ${M(e.amount)}`})),...away.map(a=>({t:new Date(a.start),s:`${a.name} recorded away days ${a.start} to ${a.end}`}))].sort((a,b)=>b.t-a.t);
 $("activityList").innerHTML=acts.slice(0,25).map(a=>`<div class="row">${a.s}</div>`).join("")||"No activity yet.";
 $("billList").innerHTML=bills.map(x=>`<div class="row"><span><b>${x.title}</b><br><small>${x.category}, paid by ${x.payer}</small></span><b>${M(x.amount)}</b></div>`).join("")||"No fixed bills saved.";
-$("settlementList").innerHTML=payments.map(x=>`<div class="row"><span>${personLabel(x.from)} → ${personLabel(x.to)} ${M(x.amount)}<br><small>${x.date||""} · ${x.status||"legacy record"}</small></span>${x.status==="pending"&&x.recipientUid===uid?`<button style="width:auto" data-confirm="${x.id}">Confirm received</button>`:""}${x.status==="pending"&&x.createdBy===uid?`<button class="danger" style="width:auto" data-cancel="${x.id}">Cancel request</button>`:""}</div>`).join("")||"No payments recorded.";
+$("settlementList").innerHTML=payments.slice().sort((a,b)=>Number(b.createdAt?.seconds||0)-Number(a.createdAt?.seconds||0)).map(x=>`<div class="card" style="margin:10px 0;padding:12px"><div class="row"><span>${personLabel(x.from)} → ${personLabel(x.to)} <b>${M(x.amount)}</b><br><small>${x.paymentMode==="cash"?"Cash":"UPI"} · ${x.date||""} · ${x.status||"legacy record"}</small></span><b>${x.status==="confirmed"?"✓ Confirmed":x.status==="pending"?"Pending":"Cancelled"}</b></div>${x.proofImage?`<a href="${x.proofImage}" target="_blank" rel="noopener"><img src="${x.proofImage}" alt="Payment proof" style="display:block;width:100%;max-width:230px;max-height:180px;object-fit:contain;border-radius:10px;background:#f2f4f3;margin:8px auto"></a>`:""}${x.status==="pending"&&x.recipientUid===uid?`<button style="width:100%;margin-top:8px" data-confirm="${x.id}">Accept & confirm received</button>`:""}${x.status==="pending"&&x.createdBy===uid?`<button class="danger" style="width:100%;margin-top:8px" data-cancel="${x.id}">Cancel request</button>`:""}</div>`).join("")||"No payments recorded.";
 document.querySelectorAll("[data-confirm]").forEach(b=>b.onclick=async()=>{
 if(!confirm("Confirm that you received this payment?"))return;
 try{await updateDoc(doc(db,"rooms",room,"settlements",b.dataset.confirm),{status:"confirmed",confirmedAt:serverTimestamp(),confirmedBy:uid});alert("Payment confirmed. Balances updated.")}
