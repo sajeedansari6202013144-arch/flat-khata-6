@@ -223,7 +223,7 @@ $("profileUpi").addEventListener("input",renderMyUpiQr);
 function renderProfiles(){
 $("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{},upi=(p.upi||"").trim(),qr=upi?("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent("upi://pay?pa="+upi+"&cu=INR&tn=Flat%20Khata%206")):"";return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div style="min-width:0;flex:1"><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small><small style="overflow-wrap:anywhere">UPI: '+(upi?escapeHtml(upi):"Not added")+"</small>"+(qr?'<img src="'+qr+'" alt="'+escapeHtml(m.name)+' UPI QR code" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px" loading="lazy">' : "")+'</div></div>'}).join("");
 const strip=$("homeMemberStrip");
-if(strip){$("homeMemberCount").textContent=members.length+"/6";strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="home-member '+(m.uid===uid?'is-me':'')+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</div>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"")}
+if(strip){$("homeMemberCount").textContent=members.length+"/6";strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<button type="button" class="home-member member-open" data-member-uid="'+escapeHtml(m.uid)+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</button>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"");return '<div class="home-member '+(m.uid===uid?'is-me':'')+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</div>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"")}
 const mine=profiles[uid]||{},img=$("profileAvatar");
 if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
 const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
@@ -233,6 +233,9 @@ if($("homeRole"))$("homeRole").textContent=admin?"Flat Admin":"Flat Member";
 if($("homeRoomCode"))$("homeRoomCode").textContent=room||"-----";
 if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
 }
+function openMemberProfile(memberUid){const m=members.find(x=>x.uid===memberUid);if(!m)return;const p=profiles[memberUid]||{};$("viewMemberAvatar").src=p.photo||avatarFallback(m.name);$("viewMemberName").textContent=m.name;$("viewMemberRole").textContent=memberUid===uid?"You · "+(admin?"Flat Admin":"Flat Member"):"Flatmate";$("viewMemberEmail").textContent=p.email||"Email not added";$("viewMemberPhone").textContent=p.phone||"Phone not added";$("viewMemberUpi").textContent=p.upi?"UPI: "+p.upi:"UPI not added";const qr=$("viewMemberQr"),src=upiQrSource(p.upi||"");qr.src=src;qr.style.display=src?"block":"none";showTab("memberProfile");}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-member-uid]");if(b)openMemberProfile(b.dataset.memberUid);});
+$("memberProfileBack").onclick=()=>showTab("home");
 async function loadMyProfile(){
 if(!uid||!room)return;
 const snap=await getDoc(doc(db,"rooms",room,"profiles",uid));
