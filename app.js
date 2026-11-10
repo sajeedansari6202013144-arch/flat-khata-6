@@ -275,6 +275,7 @@ onSnapshot(collection(db,"rooms",room,"fixedBills"),s=>{
 bills=s.docs.map(d=>({id:d.id,...d.data()}));renderExtras()
 }),
 onSnapshot(collection(db,"rooms",room,"settlements"),s=>{
+if(firstSettlementSnapshot){firstSettlementSnapshot=false;payments=s.docs.map(d=>({id:d.id,...d.data()}));render();return}
 for(const c of s.docChanges()){if(c.type!=="added"&&c.type!=="modified")continue;const p=c.doc.data();if(c.type==="added"&&p.recipientUid===uid&&p.status==="pending")priorityNotice("high","Payment confirmation needed",p.from+" says they paid "+M(p.amount)+". Confirm only after receiving it.");if(c.type==="modified"&&p.createdBy===uid&&p.status==="confirmed")priorityNotice("high","Payment confirmed",p.to+" confirmed your payment of "+M(p.amount)+".");}
 payments=s.docs.map(d=>({id:d.id,...d.data()}));render()
 }),
@@ -291,7 +292,7 @@ mountAuthCard($("settings"));
 $("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · Member")
 }
 
-let firstExpenseSnapshot=true,firstAwaySnapshot=true;
+let firstExpenseSnapshot=true,firstAwaySnapshot=true,firstSettlementSnapshot=true;
 
 function priorityNotice(level,title,body){
 msg((level==='high'?'Important: ':'')+body);
