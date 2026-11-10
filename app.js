@@ -558,12 +558,13 @@ $("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signe
 $("fk6AuthDescription").textContent=u.isAnonymous?"Secure this account once to keep the same flat identity across devices.":"You are signed in on this device. The app will open directly next time.";
 $("fk6AuthMsg").textContent=u.isAnonymous?"Secure your account to use the same identity on another device.":"Login saved. You do not need to sign in again unless you log out.";
 let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");
-if(c&&n){
+if(c&&n&&uid&&db){
 try{
 let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
 if(r.exists()&&m.exists()&&m.data()?.name===n){
 room=c;admin=r.data().adminUid===uid;
 listen();msg("Welcome back, "+n+". Your flat is connected.");
+$("join").classList.add("hidden");$("app").classList.remove("hidden");
 showPaymentReturn();return
 }
 }catch(e){msg("Could not restore your room: "+e.message);return}
