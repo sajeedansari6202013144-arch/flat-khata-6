@@ -37,6 +37,7 @@ alert("Account secured successfully. Your existing room identity is preserved.")
 }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
 };
 $("fk6Logout").onclick=async()=>{try{if(!confirm("Log out from this device? You will need to sign in again to open your flat."))return;localStorage.setItem("fk6_logged_out","1");await signOut(auth);}catch(e){alert("Could not log out: "+e.message)}};
+if($("logoutMain"))$("logoutMain").onclick=$("fk6Logout").onclick;
 $("fk6SignIn").onclick=async()=>{
 try{
 let email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
@@ -534,6 +535,7 @@ uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6SignIn").classList.toggle("hidden",!u.isAnonymous);
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
+if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
 $("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signed in";
 $("fk6AuthDescription").textContent=u.isAnonymous?"Secure this account once to keep the same flat identity across devices.":"You are signed in on this device. The app will open directly next time.";
 $("fk6AuthMsg").textContent=u.isAnonymous?"Secure your account to use the same identity on another device.":"Login saved. You do not need to sign in again unless you log out.";
