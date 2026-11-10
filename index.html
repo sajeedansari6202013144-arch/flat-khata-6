@@ -73,6 +73,18 @@ input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
 .tabs button{min-width:0;flex:1 1 20%;color:#d4dfeb;font-size:10px}.tabs button b{font-size:21px;color:#e7f0f8}.tabs button.active{background:linear-gradient(145deg,#078f89,#087d83);color:white;box-shadow:inset 0 0 0 1px #48c6ba}.tabs button:nth-child(n+6){display:none}
 .person-label{color:inherit}.pos{color:#078d83}.neg{color:#d64d68}
 @media(max-width:380px){.home-total-card{padding:18px 14px;gap:10px}.home-total-card strong{font-size:24px}.home-profile img{width:66px;height:66px}.home-quick button{font-size:10px}}
+/* Readable member picker and dashboard avatars */
+.members label{display:flex;align-items:center;gap:10px;min-height:48px;padding:11px 12px;background:#e9f5f2!important;color:#123047!important;border:1px solid #c9e5df;border-radius:13px;font-weight:650;line-height:1.25}
+.members label:has(input:checked){background:#d7f1eb!important;border-color:#0c9c8f;color:#075e59!important;box-shadow:inset 0 0 0 1px #0c9c8f}
+.members input{accent-color:#078d83;width:19px;height:19px;flex:0 0 19px;margin:0}
+.home-member-strip{display:flex;align-items:flex-start;gap:18px;overflow-x:auto;padding:8px 2px 3px}
+.home-member{display:flex;flex:0 0 76px;flex-direction:column;align-items:center;gap:6px;color:#10243b;font-size:12px;font-weight:650;text-align:center}
+.home-member img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #d6e4eb;background:#eaf1f5}
+.home-member.is-me img{border:3px solid #0c9c8f}
+.home-member small{font-size:10px;color:#718096}
+.member-count{font-size:13px;color:#42556c;font-weight:700}
+.home-member-add{width:64px;height:64px;border:2px dashed #8fcfc4;border-radius:50%;display:grid;place-items:center;color:#087d75;font-size:30px;background:#f4fbf9}
+
 
 </style>
 </head>
@@ -103,6 +115,10 @@ input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
  <button data-go="profile"><span>♙</span>Members</button>
  <button data-go="reports"><span>▥</span>Reports</button>
  <button data-go="bills"><span>▤</span>Fixed Bills</button>
+</div>
+<div class="home-panel member-strip-panel">
+ <div class="home-panel-head"><h2>Flat Members</h2><span id="homeMemberCount" class="member-count">0/6</span></div>
+ <div id="homeMemberStrip" class="home-member-strip"></div>
 </div>
 <div class="home-panel">
  <div class="home-panel-head"><h2>Recent Expenses</h2><button data-go="history">View All ›</button></div>
