@@ -273,7 +273,7 @@ applyAppearance();
 $("saveAppearance").onclick=()=>{localStorage.setItem("fk6_theme",$("themePreference").value);localStorage.setItem("fk6_font",$("fontPreference").value);applyAppearance();alert("Appearance preferences saved.");};
 $("saveNotificationPrefs").onclick=()=>{localStorage.setItem("fk6_activity_notifications",$("activityNotifications").checked?"1":"0");localStorage.setItem("fk6_payment_notifications",$("paymentNotifications").checked?"1":"0");alert("Notification preferences saved.");};
 $("activityNotifications").checked=localStorage.getItem("fk6_activity_notifications")!=="0";$("paymentNotifications").checked=localStorage.getItem("fk6_payment_notifications")!=="0";
-function showTab(id){if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
+function showTab(id){if(id==="settlement"){render();}if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
 function render(){
 let b=balances();
@@ -453,7 +453,7 @@ document.body.appendChild(menuBackdrop);
 $("homeMenuTrigger").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();menuBackdrop.classList.remove("hidden")});
 $("homeMenuClose").addEventListener("click",()=>menuBackdrop.classList.add("hidden"));
 menuBackdrop.addEventListener("click",e=>{if(e.target===menuBackdrop)menuBackdrop.classList.add("hidden")});
-menuBackdrop.querySelectorAll("[data-menu-go]").forEach(b=>b.addEventListener("click",()=>{menuBackdrop.classList.add("hidden");showTab(b.dataset.menuGo)}));
+menuBackdrop.querySelectorAll("[data-menu-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();menuBackdrop.classList.add("hidden");showTab(b.dataset.menuGo)}));
 $("homeMenuLogout").addEventListener("click",()=>{menuBackdrop.classList.add("hidden");showTab("profile");setTimeout(()=>$("logoutMain")?.click(),100)});
 $("notifyBtnHome").onclick=()=>$("notifyBtn").click();
 $("copyRoomCode").onclick=()=>{if(room&&navigator.clipboard?.writeText)navigator.clipboard.writeText(room).then(()=>alert("Room code copied: "+room)).catch(()=>alert("Room code: "+room));else alert("Room code: "+room)};
