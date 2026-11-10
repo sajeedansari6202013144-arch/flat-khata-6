@@ -194,6 +194,10 @@ function renderProfiles(){
 $("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small></div></div>'}).join("");
 const mine=profiles[uid]||{},img=$("profileAvatar");
 if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
+const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
+if(homeImg)homeImg.src=mine.photo||avatarFallback(myName);
+if($("homeMemberName"))$("homeMemberName").textContent=myName;
+if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
 }
 async function loadMyProfile(){
 if(!uid||!room)return;
@@ -237,12 +241,12 @@ let ss=settlements();
 let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 $("settle").innerHTML=ss.map(x=>{
 let pending=payments.filter(p=>p.status==="pending"&&p.from===x.from&&p.to===x.to).reduce((a,p)=>a+Number(p.amount||0),0),left=Math.max(0,x.amount-pending);
-return `<div class="row"><span>${x.from} pays ${x.to} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`
+return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`
 }).join("")||"All settled.";
-let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${e.payer}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>s.name+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
+let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
 $("recentList").innerHTML=expenses.slice(0,5).map(exp).join("")||"No expenses yet.";
-$("awayList").innerHTML=away.map(a=>`<div class="row">${a.name}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
+$("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
 document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
 document.querySelectorAll("[data-pay]").forEach(b=>b.onclick=()=>payLink(b.dataset.pay,b.dataset.amount));
