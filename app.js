@@ -149,6 +149,11 @@ async function pinHash(pin,salt){const bytes=new TextEncoder().encode(salt+":"+p
 function personalLock(){
 personalUnlocked=false;if(personalOff){personalOff();personalOff=null}
 $("personalOpen").classList.add("hidden");$("personalLocked").classList.remove("hidden");
+const hasPin=!!localStorage.getItem(personalKey());
+$("personalPin2").classList.toggle("hidden",hasPin);
+$("pinPrompt").textContent=hasPin?"Enter your 6-digit MPIN.":"Create a 6-digit MPIN for this account.";
+$("personalUnlock").textContent=hasPin?"Unlock Personal Expenses":"Set MPIN and unlock";
+$("personalPin").placeholder=hasPin?"Enter 6-digit MPIN":"6-digit MPIN";
 $("personalPin").value="";$("personalPin2").value="";
 }
 async function personalUnlock(){
@@ -392,7 +397,7 @@ try{await join($("code").value.trim().toUpperCase(),$("name").value)}
 catch(e){alert(e.message)}
 };
 
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="personal"&&!personalUnlocked){$("pinPrompt").textContent=localStorage.getItem(personalKey())?"Enter your 6-digit MPIN.":"Create a 6-digit MPIN for this account."; $("personalUnlock").textContent=localStorage.getItem(personalKey())?"Unlock Personal Expenses":"Set MPIN and unlock";}showTab(b.dataset.tab)});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="personal"&&!personalUnlocked)personalLock();showTab(b.dataset.tab)});
 $("personalUnlock").onclick=()=>personalUnlock().catch(e=>alert(e.message));
 $("personalLock").onclick=personalLock;
 $("personalSave").onclick=async()=>{try{if(!personalUnlocked)throw Error("Unlock Personal Expenses first.");const title=$("personalTitle").value.trim(),amount=Number($("personalAmount").value),date=$("personalDate").value||new Date().toISOString().slice(0,10);if(!title||!Number.isFinite(amount)||amount<=0)throw Error("Enter a title and valid amount.");await addDoc(collection(db,"users",uid,"personalExpenses"),{title,amount,date,category:$("personalCategory").value,note:$("personalNote").value.trim(),ownerUid:uid,createdAt:serverTimestamp()});$("personalTitle").value="";$("personalAmount").value="";$("personalNote").value="";}catch(e){alert(e.message)}};
