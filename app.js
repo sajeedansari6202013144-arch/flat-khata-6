@@ -16,6 +16,9 @@ const $=id=>document.getElementById(id);
 const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 
 let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
+const firebaseApp=initializeApp(firebaseConfig);
+auth=getAuth(firebaseApp);
+db=getFirestore(firebaseApp);
 
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
 
@@ -530,8 +533,6 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)showPaymen
 window.addEventListener("focus",showPaymentReturn);
 window.addEventListener("pageshow",showPaymentReturn);
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app);
-db=getFirestore(app);
 await setPersistence(auth,browserLocalPersistence);
 
 onAuthStateChanged(auth,async u=>{
