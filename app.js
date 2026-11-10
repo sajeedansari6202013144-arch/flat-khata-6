@@ -509,7 +509,7 @@ if(permission!=="granted"){alert("Notification permission was not granted. Allow
 try{
 const [{getMessaging,getToken,onMessage}]=await Promise.all([import("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js")]);
 const registration=await navigator.serviceWorker.register("./firebase-messaging-sw.js");
-const messaging=getMessaging(app);
+const messaging=getMessaging(firebaseApp);
 const token=await getToken(messaging,{vapidKey:"BKnPPAQK1lRWcToqpJXR5DhMvp8g-oEYD0UJQMt8dEk--GcdRy6GQH68c2IcdcRObxW0ZXti4Ir4UKEt21Dl0jI",serviceWorkerRegistration:registration});
 if(!token)throw Error("FCM token was not generated. Check your Firebase Web Push certificate.");
 await setDoc(doc(db,"rooms",room,"pushTokens",uid),{uid,name:members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Member",token,updatedAt:serverTimestamp()},{merge:true});
@@ -561,7 +561,7 @@ let c=localStorage.getItem("fk6_room"),n=localStorage.getItem("fk6_name");
 if(c&&n){
 try{
 let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
-if(r.exists()&&m.exists()&&m.data().name===n){
+if(r.exists()&&m.exists()&&m.data()?.name===n){
 room=c;admin=r.data().adminUid===uid;
 listen();msg("Welcome back, "+n+". Your flat is connected.");
 showPaymentReturn();return
