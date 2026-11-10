@@ -518,6 +518,7 @@ alert("Push notifications enabled. This device will receive flat activity alerts
 }catch(e){console.error(e);alert("Could not enable push notifications: "+e.message)}
 }
 $("notifyBtn").onclick=enablePushNotifications;
+if($("notifyBtnHome"))$("notifyBtnHome").onclick=enablePushNotifications;
 
 const paymentReturnBox=document.createElement("div");
 paymentReturnBox.id="fk6PaymentReturn";
