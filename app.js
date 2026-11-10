@@ -546,7 +546,7 @@ if(!u){
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
-$("fk6LinkAccount").classList.remove("hidden");
+$("fk6LinkAccount").classList.add("hidden");
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.add("hidden");
 $("fk6AuthTitle").textContent="Account access";
@@ -557,7 +557,7 @@ return;
 localStorage.removeItem("fk6_logged_out");
 uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
-$("fk6SignIn").classList.toggle("hidden",!u.isAnonymous);
+$("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
 $("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signed in";
