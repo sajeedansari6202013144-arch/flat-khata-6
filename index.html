@@ -87,6 +87,8 @@ input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
 
 
 #roomLabel{display:none!important}
+
+.home-avatar-wrap{position:relative;flex:0 0 76px;height:76px}.home-avatar-wrap img{display:block}.home-menu-trigger{position:absolute;right:-3px;bottom:-2px;width:29px;height:29px;min-height:29px;padding:0;margin:0;border:2px solid #0b1d33;border-radius:50%;background:#0c9c8f;color:#fff;font-size:17px;box-shadow:0 3px 9px #001a2b55}.home-menu-backdrop{position:fixed;inset:0;z-index:60;background:#07152588;display:flex;align-items:flex-start;justify-content:flex-end;padding:85px 14px 20px}.home-menu-backdrop.hidden{display:none!important}.home-menu-card{width:min(290px,90vw);padding:14px;border-radius:20px;background:#fff;box-shadow:0 18px 55px #06162955;display:grid;gap:5px}.home-menu-head{display:flex;justify-content:space-between;align-items:center;color:#10243b;padding:0 3px 8px}.home-menu-head button{width:34px;min-height:34px;padding:0;margin:0;background:#edf3f7;color:#10243b;font-size:22px}.home-menu-card>button:not(.home-menu-head button){width:100%;min-height:44px;text-align:left;padding:10px 12px;margin:0;background:#f2f7f8;color:#18324a;border-radius:11px;font-weight:650}.home-menu-card>button.menu-logout{background:#fff0f1;color:#b4233b}
 </style>
 </head>
 <body><main>
@@ -94,36 +96,26 @@ input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
 <div id="status">Starting secure sign-in...</div>
 <section id="join" class="card"><h3>Welcome to Flat Khata 6</h3><p class="muted">Sign in with your email and password, then enter your flat room code. Your account will stay signed in until you log out.</p><input id="code" maxlength="5" autocapitalize="characters" placeholder="5-character room code" autocomplete="off"></section>
 <div id="app" class="hidden"><div id="roomLabel"></div>
-<nav class="tabs"><button data-tab="home" class="active"><b>⌂</b>Home</button><button data-tab="add"><b>＋</b>Expenses</button><button data-tab="home"><b>₹</b>Balance</button><button data-tab="profile"><b>👤</b>Profile</button><button data-tab="personal"><b>🔒</b>Personal</button><button data-tab="reports"><b>▥</b>Reports</button><button data-tab="groups"><b>◫</b>Groups</button><button data-tab="wallet"><b>▣</b>Wallet</button><button data-tab="recurring"><b>↻</b>Recurring</button><button data-tab="settings"><b>⚙</b>Room</button></nav>
+<nav class="tabs"><button data-tab="home" class="active"><b>⌂</b>Home</button><button data-tab="history"><b>◷</b>Recent</button><button data-tab="wallet"><b>＋</b>Add Balance</button><button data-tab="profile"><b>👤</b>Profile</button><button data-tab="personal"><b>🔒</b>Personal</button><button data-tab="reports"><b>▥</b>Reports</button><button data-tab="groups"><b>◫</b>Groups</button><button data-tab="wallet"><b>▣</b>Wallet</button><button data-tab="recurring"><b>↻</b>Recurring</button><button data-tab="settings"><b>⚙</b>Room</button></nav>
 <section id="home" class="section active">
 <div class="home-top">
  <div class="home-brand"><div class="home-logo">⌂</div><div><h1>Flat Khata</h1><p>Shared Flat Expenses</p></div></div>
  <button class="home-bell" id="notifyBtnHome" aria-label="Notifications">🔔</button>
 </div>
-<div class="home-profile" data-go="profile"><img id="homeAvatar" src="" alt="Profile"><div><strong id="homeMemberName">Flatmate</strong><small id="homeRole">Flat member</small></div><span>›</span></div>
-<div class="home-room-card" data-go="profile">
- <div class="room-info"><span class="home-round-icon">♙</span><div><small>Flat Members</small><strong id="memberCount">0 / 6</strong></div><span class="room-arrow">›</span></div>
-</div>
+<div class="home-profile"><div class="home-avatar-wrap"><img id="homeAvatar" src="" alt="Profile"><button class="home-menu-trigger" id="homeMenuTrigger" aria-label="Open app menu">⌂</button></div><div data-go="profile"><strong id="homeMemberName">Flatmate</strong><small id="homeRole">Flat member</small></div><span data-go="profile">›</span></div><div class="home-menu-backdrop hidden" id="homeMenuBackdrop"><div class="home-menu-card"><div class="home-menu-head"><strong>Quick Menu</strong><button id="homeMenuClose" aria-label="Close menu">×</button></div><button data-menu-go="home">⌂ Home</button><button data-menu-go="history">◷ Recent Expenses</button><button data-menu-go="wallet">＋ Add Balance</button><button data-menu-go="profile">👤 My Profile</button><button data-menu-go="reports">▥ Reports</button><button data-menu-go="groups">◫ Groups</button><button data-menu-go="settings">⚙ Settings</button><button id="homeMenuLogout" class="menu-logout">↪ Log out</button></div></div>
+<div id="memberCount" class="hidden">0 / 6</div>
 <div class="home-total-card">
  <div><small>Total Expenses</small><strong id="total">₹0</strong></div>
  <i></i>
  <div><small>Your Balance</small><strong id="yourBalance">₹0</strong><em id="yourBalanceLabel">Even</em></div>
  <div class="wave-decoration"></div>
 </div>
-<div class="home-quick">
- <button data-go="add"><span>＋</span>Add Expense</button>
- <button data-go="profile"><span>♙</span>Members</button>
- <button data-go="reports"><span>▥</span>Reports</button>
- <button data-go="bills"><span>▤</span>Fixed Bills</button>
-</div>
+
 <div class="home-panel member-strip-panel">
  <div class="home-panel-head"><h2>Flat Members</h2><span id="homeMemberCount" class="member-count">0/6</span></div>
  <div id="homeMemberStrip" class="home-member-strip"></div>
 </div>
-<div class="home-panel">
- <div class="home-panel-head"><h2>Recent Expenses</h2><button data-go="history">View All ›</button></div>
- <div id="recentList" class="home-recent-list"></div>
-</div>
+<div id="recentList" class="hidden"></div>
 <div class="home-panel balance-panel">
  <div class="home-panel-head"><h2>Member Balance</h2><button data-go="home">⇄ Settle Up</button></div>
  <div id="balances"></div>
