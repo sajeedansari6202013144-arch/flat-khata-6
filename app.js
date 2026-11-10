@@ -71,38 +71,31 @@ return o;
 async function payLink(to,maximum){
 let from=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 if(!from){alert("Your member profile could not be identified.");return;}
-
 let ownDue=settlements().find(x=>x.from===from&&x.to===to);
 if(!ownDue){alert("You can only pay your own pending balance.");return;}
-
-let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to)
-.reduce((a,p)=>a+Number(p.amount||0),0);
-
+let pending=payments.filter(p=>p.status==="pending"&&p.from===from&&p.to===to).reduce((a,p)=>a+Number(p.amount||0),0);
 let available=Math.max(0,Number(ownDue.amount)-pending);
 if(available<=0){alert("Your payment is already awaiting confirmation.");return;}
-
-let amount=Number(prompt(
-"Enter amount to pay now. Remaining payable: ₹"+available.toFixed(2),
-String(Math.min(50,available))
-));
-
-if(!Number.isFinite(amount)||amount<=0||amount>available){
-alert("Enter a valid amount up to ₹"+available.toFixed(2));
-return;
-}
-
+let amount=Number(prompt("Enter amount to pay now. Remaining payable: ₹"+available.toFixed(2),String(Math.min(50,available))));
+if(!Number.isFinite(amount)||amount<=0||amount>available){alert("Enter a valid amount up to ₹"+available.toFixed(2));return;}
 let receiver=members.find(m=>m.name===to);
 if(!receiver){alert("Recipient member not found.");return;}
-
 let v=upis[to];
 if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it.");return;}
-
-localStorage.setItem("fk6_payment_draft",JSON.stringify({
-from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()
-}));
-
-let url=`upi://pay?pa=${encodeURIComponent(v)}&am=${encodeURIComponent(Number(amount).toFixed(2))}&cu=INR&tn=${encodeURIComponent("Flat Khata 6")}`;
-location.href=url;
+let draft={from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()};
+let upiUri="upi://pay?pa="+encodeURIComponent(v)+"&pn="+encodeURIComponent(to)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");
+let overlay=document.createElement("div");
+overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto";
+let panel=document.createElement("div");
+panel.style.cssText="background:#fff;color:#17231e;border-radius:18px;padding:18px;width:min(100%,390px);text-align:center;max-height:92vh;overflow:auto";
+panel.innerHTML='<h2 style="margin:4px 0 8px">Pay '+to+'</h2><h1 style="font-size:30px;margin:6px 0">₹'+amount.toFixed(2)+'</h1><p style="overflow-wrap:anywhere;font-weight:600;margin:8px 0">'+v+'</p><img id="fk6PayQr" alt="UPI payment QR code" style="width:240px;height:240px;max-width:100%;object-fit:contain;display:block;margin:12px auto" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent(upiUri)+'"><p style="font-size:13px;color:#46554d">Scan this QR using another phone. Check the recipient name and amount in your UPI app before paying.</p><button id="fk6Copy" style="width:100%;padding:12px;border:0;border-radius:10px;background:#e9f2ed;margin:5px 0">Copy UPI ID</button><a id="fk6OpenUpi" href="'+upiUri+'" style="display:block;padding:13px;border-radius:10px;background:#167d55;color:white;text-decoration:none;font-weight:700;margin:6px 0">Open UPI app</a><button id="fk6PaidQr" style="width:100%;padding:12px;border:0;border-radius:10px;background:#d7f4e5;color:#075b3b;font-weight:700;margin:5px 0">I have paid</button><button id="fk6CloseQr" style="width:100%;padding:11px;border:0;border-radius:10px;background:#eee;margin-top:5px">I have not paid, close</button><p style="font-size:11px;color:#65736b">The app cannot verify bank payment automatically. The recipient must confirm receipt.</p>';
+overlay.appendChild(panel);document.body.appendChild(overlay);
+panel.querySelector("#fk6Copy").onclick=async()=>{try{await navigator.clipboard.writeText(v);alert("UPI ID copied. Open PhonePe and pay manually.")}catch(e){prompt("Copy this UPI ID",v)}};
+panel.querySelector("#fk6OpenUpi").onclick=()=>localStorage.setItem("fk6_payment_draft",JSON.stringify(draft));
+panel.querySelector("#fk6PaidQr").onclick=()=>{localStorage.setItem("fk6_payment_draft",JSON.stringify(draft));overlay.remove();showPaymentReturn()};
+panel.querySelector("#fk6CloseQr").onclick=()=>overlay.remove();
+overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
+panel.querySelector("#fk6PayQr").onerror=function(){this.style.display="none";let note=document.createElement("p");note.textContent="QR image could not load. Use Copy UPI ID to pay manually.";panel.insertBefore(note,panel.querySelector("#fk6Copy"))};
 }function showPaymentReturn(){
 let raw=localStorage.getItem("fk6_payment_draft");
 let box=document.getElementById("fk6PaymentReturn");
