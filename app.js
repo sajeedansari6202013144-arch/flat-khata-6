@@ -234,7 +234,40 @@ if($("homeRole"))$("homeRole").textContent=admin?"Flat Admin":"Flat Member";
 if($("homeRoomCode"))$("homeRoomCode").textContent=room||"-----";
 if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
 }
-function openMemberProfile(memberUid){const m=members.find(x=>x.uid===memberUid);if(!m)return;const p=profiles[memberUid]||{};$("viewMemberAvatar").src=p.photo||avatarFallback(m.name);$("viewMemberName").textContent=m.name;$("viewMemberRole").textContent=memberUid===uid?"You · "+(admin?"Flat Admin":"Flat Member"):"Flatmate";$("viewMemberEmail").textContent=p.email||"Email not added";$("viewMemberPhone").textContent=p.phone||"Phone not added";$("viewMemberUpi").textContent=p.upi?"UPI: "+p.upi:"UPI not added";const qr=$("viewMemberQr"),src=upiQrSource(p.upi||"");qr.src=src;qr.style.display=src?"block":"none";showTab("memberProfile");}
+function memberSinceLabel(member){
+const v=member?.joinedAt||member?.createdAt;
+if(!v)return "Date unavailable";
+const d=v.toDate?v.toDate():new Date(v);
+return Number.isNaN(d.getTime())?"Date unavailable":d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+}
+function memberProfileStats(member){
+const name=member?.name||"";
+const contributed=expenses.filter(e=>e.payer===name).reduce((sum,e)=>sum+Number(e.amount||0),0);
+const completed=payments.filter(p=>p.status==="confirmed"&&(p.from===name||p.to===name)).length;
+return {contributed,completed};
+}
+function profileCompletion(p,member){
+const fields=[!!member?.name,!!p?.photo,!!String(p?.email||"").trim(),!!String(p?.phone||"").trim(),!!String(p?.upi||"").trim()];
+const done=fields.filter(Boolean).length;
+return {done,total:fields.length,percent:Math.round(done/fields.length*100)};
+}
+function openMemberProfile(memberUid){
+const m=members.find(x=>x.uid===memberUid);if(!m)return;
+const p=profiles[memberUid]||{},stats=memberProfileStats(m),completion=profileCompletion(p,m);
+$("viewMemberAvatar").src=p.photo||avatarFallback(m.name);
+$("viewMemberName").textContent=m.name;
+$("viewMemberRole").textContent=memberUid===uid?(admin?"ADMIN · You":"You · Flat Member"):(m.role==="admin"?"Flat Admin":"Flat Member");
+$("viewMemberEmail").textContent=p.email||"Email not added";
+$("viewMemberPhone").textContent=p.phone||"Phone not added";
+$("viewMemberUpi").textContent=p.upi?"UPI: "+p.upi:"UPI not added";
+$("viewMemberSince").textContent=memberSinceLabel(m);
+$("viewMemberContribution").textContent=M(stats.contributed);
+$("viewMemberSettlements").textContent=String(stats.completed);
+$("viewMemberCompletion").textContent=completion.done+"/"+completion.total+" details · "+completion.percent+"% complete";
+$("viewMemberCompletionBar").style.width=completion.percent+"%";
+const qr=$("viewMemberQr"),src=upiQrSource(p.upi||"");qr.src=src;qr.style.display=src?"block":"none";
+showTab("memberProfile");
+}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-member-uid]");if(b)openMemberProfile(b.dataset.memberUid);});
 $("memberProfileBack").onclick=()=>showTab("home");
 async function loadMyProfile(){
@@ -247,6 +280,12 @@ $("profileEmail").value=profiles[uid].email||"";
 $("profilePhone").value=profiles[uid].phone||"";
  $("profileUpi").value=profiles[uid].upi||"";
  renderMyUpiQr();
+const myMember=members.find(m=>m.uid===uid),myStats=memberProfileStats(myMember),myCompletion=profileCompletion(profiles[uid],myMember);
+$("myMemberSince").textContent=memberSinceLabel(myMember);
+$("myContribution").textContent=M(myStats.contributed);
+$("mySettlements").textContent=String(myStats.completed);
+$("myProfileCompletion").textContent=myCompletion.done+"/"+myCompletion.total+" details · "+myCompletion.percent+"% complete";
+$("myProfileCompletionBar").style.width=myCompletion.percent+"%";
 renderProfiles();
 }
 $("profilePhotoInput").onchange=async e=>{
