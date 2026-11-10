@@ -194,6 +194,8 @@ return '<span class="person-label"><img src="'+(p.photo||avatarFallback(name))+'
 }
 function renderProfiles(){
 $("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small></div></div>'}).join("");
+const strip=$("homeMemberStrip");
+if(strip){$("homeMemberCount").textContent=members.length+"/6";strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="home-member '+(m.uid===uid?'is-me':'')+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</div>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"")}
 const mine=profiles[uid]||{},img=$("profileAvatar");
 if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
 const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
