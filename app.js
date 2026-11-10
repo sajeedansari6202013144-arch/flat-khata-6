@@ -142,6 +142,43 @@ localStorage.removeItem("fk6_payment_draft");box.hidden=true;alert("Payment clai
 document.getElementById("fk6PaymentCancel").onclick=()=>{localStorage.removeItem("fk6_payment_draft");box.hidden=true;alert("No payment record was created.")};
 }
 
+
+let personalRows=[],personalOff=null,personalUnlocked=false,personalLastTouch=0;
+const personalKey=()=> "fk6_pin_"+uid;
+async function pinHash(pin,salt){const bytes=new TextEncoder().encode(salt+":"+pin);const hash=await crypto.subtle.digest("SHA-256",bytes);return [...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function personalLock(){
+personalUnlocked=false;if(personalOff){personalOff();personalOff=null}
+$("personalOpen").classList.add("hidden");$("personalLocked").classList.remove("hidden");
+$("personalPin").value="";$("personalPin2").value="";
+}
+async function personalUnlock(){
+if(!uid)throw Error("Sign in first.");
+const pin=$("personalPin").value,confirmPin=$("personalPin2").value,stored=localStorage.getItem(personalKey());
+if(!/^\d{6}$/.test(pin))throw Error("MPIN must contain exactly 6 digits.");
+if(!stored){
+if(pin!==confirmPin)throw Error("MPIN entries do not match.");
+const salt=crypto.randomUUID(),hash=await pinHash(pin,salt);
+localStorage.setItem(personalKey(),JSON.stringify({salt,hash}));
+}else{
+const saved=JSON.parse(stored);
+if(await pinHash(pin,saved.salt)!==saved.hash)throw Error("Incorrect MPIN.");
+}
+personalUnlocked=true;personalLastTouch=Date.now();
+$("personalLocked").classList.add("hidden");$("personalOpen").classList.remove("hidden");
+if(personalOff)personalOff();
+personalOff=onSnapshot(collection(db,"users",uid,"personalExpenses"),s=>{
+personalRows=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+renderPersonal();
+},e=>alert("Personal data could not load: "+e.message));
+}
+function renderPersonal(){
+if(!personalUnlocked)return;
+const total=personalRows.reduce((s,x)=>s+Number(x.amount||0),0);
+$("personalTotal").textContent=M(total);$("personalCount").textContent=personalRows.length;
+$("personalHistory").innerHTML=personalRows.map(x=>'<div class="row"><span><b>'+escapeHtml(x.title)+'</b><br><small>'+escapeHtml(x.date||"")+' · '+escapeHtml(x.category||"Other")+(x.note?' · '+escapeHtml(x.note):"")+'</small></span><b>'+M(x.amount)+'</b></div>').join("")||'<p class="muted">No personal expenses yet.</p>';
+}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
 function showTab(id){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
 function render(){
@@ -310,7 +347,16 @@ try{await join($("code").value.trim().toUpperCase(),$("name").value)}
 catch(e){alert(e.message)}
 };
 
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="personal"&&!personalUnlocked){$("pinPrompt").textContent=localStorage.getItem(personalKey())?"Enter your 6-digit MPIN.":"Create a 6-digit MPIN for this account."; $("personalUnlock").textContent=localStorage.getItem(personalKey())?"Unlock Personal Expenses":"Set MPIN and unlock";}showTab(b.dataset.tab)});
+$("personalUnlock").onclick=()=>personalUnlock().catch(e=>alert(e.message));
+$("personalLock").onclick=personalLock;
+$("personalSave").onclick=async()=>{try{if(!personalUnlocked)throw Error("Unlock Personal Expenses first.");const title=$("personalTitle").value.trim(),amount=Number($("personalAmount").value),date=$("personalDate").value||new Date().toISOString().slice(0,10);if(!title||!Number.isFinite(amount)||amount<=0)throw Error("Enter a title and valid amount.");await addDoc(collection(db,"users",uid,"personalExpenses"),{title,amount,date,category:$("personalCategory").value,note:$("personalNote").value.trim(),ownerUid:uid,createdAt:serverTimestamp()});$("personalTitle").value="";$("personalAmount").value="";$("personalNote").value="";}catch(e){alert(e.message)}};
+$("personalChangePin").onclick=()=>{const next=prompt("Enter a new 6-digit MPIN");if(!/^\\d{6}$/.test(next||"")){alert("MPIN must contain exactly 6 digits.");return}const again=prompt("Confirm new MPIN");if(next!==again){alert("MPINs do not match.");return}crypto.randomUUID&&pinHash(next,crypto.randomUUID()).then(hash=>{const salt=crypto.randomUUID();return pinHash(next,salt).then(h=>localStorage.setItem(personalKey(),JSON.stringify({salt,hash:h}))) }).then(()=>alert("MPIN changed."))};
+$("personalReset").onclick=async()=>{try{const email=prompt("Enter your account email"),password=prompt("Enter your account password");if(!email||!password) return;await signInWithEmailAndPassword(auth,email,password);localStorage.removeItem(personalKey());$("pinPrompt").textContent="Set a new 6-digit MPIN.";alert("Account verified. Set a new MPIN now.");}catch(e){alert("Account verification failed: "+e.message)}};
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&personalUnlocked)personalLock()});
+["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{if(personalUnlocked)personalLastTouch=Date.now()},{passive:true}));
+setInterval(()=>{if(personalUnlocked&&Date.now()-personalLastTouch>120000)personalLock()},10000);
+
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
 
 $("mode").onchange=()=>$("custom").classList.toggle("hidden",$("mode").value!=="custom");
