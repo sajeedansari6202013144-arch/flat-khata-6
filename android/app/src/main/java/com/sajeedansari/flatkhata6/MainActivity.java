@@ -1,0 +1,55 @@
+package com.sajeedansari.flatkhata6;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.content.Intent;
+import android.net.Uri;
+import android.webkit.WebResourceRequest;
+
+public class MainActivity extends Activity {
+    private WebView web;
+    private static final String HOME = "https://sajeedansari6202013144-arch.github.io/flat-khata-6/";
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
+        getWindow().setStatusBarColor(android.graphics.Color.rgb(6,17,14));
+        getWindow().setNavigationBarColor(android.graphics.Color.rgb(6,17,14));
+        web = new WebView(this);
+        WebSettings settings = web.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setSupportZoom(false);
+        web.setWebChromeClient(new WebChromeClient());
+        web.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return route(request.getUrl().toString());
+            }
+            @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return route(url);
+            }
+        });
+        setContentView(web);
+        if (state == null) web.loadUrl(HOME); else web.restoreState(state);
+    }
+    private boolean route(String url) {
+        if (url.startsWith("upi:") || url.startsWith("intent:") || url.startsWith("tel:") || url.startsWith("mailto:")) {
+            try { startActivity(Intent.parseUri(url, Intent.URI_INTENT_SCHEME)); }
+            catch (Exception e) { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {} }
+            return true;
+        }
+        if (!url.startsWith("https://sajeedansari6202013144-arch.github.io/flat-khata-6/")) {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
+            return true;
+        }
+        return false;
+    }
+    @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
+    @Override public void onBackPressed() { if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed(); }
+    @Override protected void onDestroy() { if (web != null) web.destroy(); super.onDestroy(); }
+}
