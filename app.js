@@ -220,7 +220,16 @@ render();notifyActivity("away",s.docChanges())
 onSnapshot(collection(db,"rooms",room,"members"),s=>{
 members=s.docs.map(d=>d.data());
 $("memberCount").textContent=members.length+"/6";
-["payer","awayName","billPayer","settleFrom","settleTo","upiMember"].forEach(id=>$(id).innerHTML=N.map(n=>`<option>${n}</option>`).join(""));
+const currentMemberName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"";
+const priorityNames=currentMemberName?[currentMemberName,...N.filter(n=>n!==currentMemberName)]:N;
+["payer","awayName","billPayer","settleFrom","settleTo","upiMember","name"].forEach(id=>{
+let el=$(id);if(!el)return;
+let previous=el.value;
+el.innerHTML=priorityNames.map(n=>'<option value="'+n+'">'+n+'</option>').join("");
+if(id==="payer"||id==="billPayer")el.value=currentMemberName||previous||N[0];
+else if(previous&&priorityNames.includes(previous))el.value=previous;
+else if(id==="name"&&currentMemberName)el.value=currentMemberName;
+});
 $("checks").innerHTML=N.map(n=>`<label><input type="checkbox" class="part" value="${n}" checked> ${n}</label>`).join("");
 $("custom").innerHTML=N.map(n=>`<label>${n}<input class="share" data-name="${n}" type="number" placeholder="₹"></label>`).join("");
 render()
