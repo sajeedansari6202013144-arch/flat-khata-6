@@ -15,7 +15,7 @@ const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"];
 const $=id=>document.getElementById(id);
 const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 
-let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
+let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
 
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
 
