@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sajeedansari.flatkhata6",
+      "sha256_cert_fingerprints": [
+        "A9:4E:96:43:01:8A:4A:0F:DA:94:59:72:2F:2C:C5:D9:00:33:E9:27:37:F5:E6:04:D3:09:22:69:86:17:E4:2F"
+      ]
+    }
+  }
+]
