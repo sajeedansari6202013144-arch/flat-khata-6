@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -18,6 +18,30 @@ const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 let db,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={};
 
 $("name").innerHTML=N.map(n=>`<option>${n}</option>`).join("");
+
+const authCard=document.createElement("div");
+authCard.className="card";
+authCard.innerHTML='<h3>Secure your account for app access</h3><p class="muted">Use the same email and password on Chrome and the installed Android app. This keeps the same flat member identity.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Create password (6+ characters)"><button id="fk6LinkAccount">Secure this device account</button><button id="fk6SignIn" class="secondary">Already secured? Sign in</button><p class="muted" id="fk6AuthMsg">Do not share your password with anyone.</p>';
+$("join").appendChild(authCard);
+$("fk6LinkAccount").onclick=async()=>{
+try{
+let user=auth.currentUser,email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
+if(!user||!user.isAnonymous)throw Error("This device is not using an anonymous account. Use Sign in instead.");
+if(!email||password.length<6)throw Error("Enter a valid email and password of at least 6 characters.");
+await linkWithCredential(user,EmailAuthProvider.credential(email,password));
+$("fk6AuthMsg").textContent="Account secured. Your existing member ID and room remain the same. Now sign in on the APK using this email and password.";
+alert("Account secured successfully. Your existing room identity is preserved.");
+}catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
+};
+$("fk6SignIn").onclick=async()=>{
+try{
+let email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value;
+if(!email||!password)throw Error("Enter your email and password.");
+await signInWithEmailAndPassword(auth,email,password);
+$("fk6AuthMsg").textContent="Signed in. Restoring your flat…";
+}catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
+};
+
 
 function msg(t){$("status").textContent=t}
 
