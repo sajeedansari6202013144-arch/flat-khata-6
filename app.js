@@ -288,7 +288,7 @@ return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} 
 let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
 const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧","Wi-Fi":"⌁", "Gas cylinder":"♨",Other:"▤"};
-$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
+if($("recentList"))$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
 $("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
 document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
@@ -443,6 +443,12 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&personalUn
 setInterval(()=>{if(personalUnlocked&&Date.now()-personalLastTouch>120000)personalLock()},10000);
 
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
+const menuBackdrop=$("homeMenuBackdrop");
+$("homeMenuTrigger").onclick=()=>menuBackdrop.classList.remove("hidden");
+$("homeMenuClose").onclick=()=>menuBackdrop.classList.add("hidden");
+menuBackdrop.onclick=e=>{if(e.target===menuBackdrop)menuBackdrop.classList.add("hidden")};
+menuBackdrop.querySelectorAll("[data-menu-go]").forEach(b=>b.onclick=()=>{menuBackdrop.classList.add("hidden");showTab(b.dataset.menuGo)});
+$("homeMenuLogout").onclick=()=>{menuBackdrop.classList.add("hidden");showTab("profile");setTimeout(()=>$("logoutMain")?.click(),100)};
 $("notifyBtnHome").onclick=()=>$("notifyBtn").click();
 $("copyRoomCode").onclick=()=>{if(room&&navigator.clipboard?.writeText)navigator.clipboard.writeText(room).then(()=>alert("Room code copied: "+room)).catch(()=>alert("Room code: "+room));else alert("Room code: "+room)};
 
