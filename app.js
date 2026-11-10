@@ -134,7 +134,7 @@ let amount=Number(prompt("Enter amount to pay now. Remaining payable: ₹"+avail
 if(!Number.isFinite(amount)||amount<=0||amount>available){alert("Enter a valid amount up to ₹"+available.toFixed(2));return;}
 let receiver=members.find(m=>m.name===to);
 if(!receiver){alert("Recipient member not found.");return;}
-let v=upis[to];
+let v=(profiles[receiver.uid]?.upi||upis[to]||"").trim();
 if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it.");return;}
 let draft={from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()};
 let upiUri="upi://pay?pa="+encodeURIComponent(v)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");
@@ -217,8 +217,11 @@ function personLabel(name){
 const m=members.find(x=>x.name===name),p=m?profiles[m.uid]||{}:{};
 return '<span class="person-label"><img src="'+(p.photo||avatarFallback(name))+'" alt="">'+escapeHtml(name)+'</span>';
 }
+function upiQrSource(value){const id=String(value||"").trim();if(!/^[\\w.\\-]{2,}@[\\w]{2,}$/.test(id))return "";const uri="upi://pay?pa="+encodeURIComponent(id)+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6");return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(uri)}
+function renderMyUpiQr(){const el=$("profileUpiQr"),id=$("profileUpi")?.value.trim()||"",src=upiQrSource(id);if(el){el.src=src;el.style.display=src?"block":"none"} }
+$("profileUpi").addEventListener("input",renderMyUpiQr);
 function renderProfiles(){
-$("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small></div></div>'}).join("");
+$("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{},upi=(p.upi||"").trim(),qr=upi?("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent("upi://pay?pa="+upi+"&cu=INR&tn=Flat%20Khata%206")):"";return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div style="min-width:0;flex:1"><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small><small style="overflow-wrap:anywhere">UPI: '+(upi?escapeHtml(upi):"Not added")+"</small>"+(qr?'<img src="'+qr+'" alt="'+escapeHtml(m.name)+' UPI QR code" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px" loading="lazy">' : "")+'</div></div>'}).join("");
 const strip=$("homeMemberStrip");
 if(strip){$("homeMemberCount").textContent=members.length+"/6";strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="home-member '+(m.uid===uid?'is-me':'')+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</div>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"")}
 const mine=profiles[uid]||{},img=$("profileAvatar");
@@ -238,6 +241,8 @@ const me=members.find(m=>m.uid===uid);
 $("profileName").value=me?.name||localStorage.getItem("fk6_name")||"";
 $("profileEmail").value=profiles[uid].email||"";
 $("profilePhone").value=profiles[uid].phone||"";
+ $("profileUpi").value=profiles[uid].upi||"";
+ renderMyUpiQr();
 renderProfiles();
 }
 $("profilePhotoInput").onchange=async e=>{
@@ -254,8 +259,10 @@ try{
 if(!uid||!room)throw Error("Join your flat first.");
 const me=members.find(m=>m.uid===uid);if(!me)throw Error("Member profile not found.");
 const photo=profiles[uid]?.photo||"";
+ const upi=$("profileUpi").value.trim();
+ if(upi&&!/^[\\w.\\-]{2,}@[\\w]{2,}$/.test(upi))throw Error("Enter a valid UPI ID, for example name@okaxis.");
 if(photo.length>850000)throw Error("Photo is too large. Choose another photo.");
-const data={uid,name:me.name,email:$("profileEmail").value.trim().slice(0,120),phone:$("profilePhone").value.trim().slice(0,30),photo,updatedAt:serverTimestamp()};
+const data={uid,name:me.name,email:$("profileEmail").value.trim().slice(0,120),phone:$("profilePhone").value.trim().slice(0,30),upi,photo,updatedAt:serverTimestamp()};
 await setDoc(doc(db,"rooms",room,"profiles",uid),data,{merge:true});
 profiles[uid]=data;renderProfiles();alert("Profile saved and synced for all flatmates.");
 }catch(e){alert("Could not save profile: "+e.message)}
