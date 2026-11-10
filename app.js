@@ -70,15 +70,15 @@ return Math.max(0,d);
 function balances(){
 let b=N.map(()=>0);
 expenses.forEach(e=>{
-let p=N.indexOf(e.payer);
+let p=(N||[]).indexOf(e.payer);
 if(p>=0)b[p]+=+e.amount;
 (e.shares||[]).forEach(s=>{
-let i=N.indexOf(s.name);
+let i=(N||[]).indexOf(s.name);
 if(i>=0)b[i]-=+s.amount;
 });
 });
 payments.filter(p=>p.status==="confirmed").forEach(p=>{
-let i=N.indexOf(p.from),j=N.indexOf(p.to);
+let i=(N||[]).indexOf(p.from),j=(N||[]).indexOf(p.to);
 if(i>=0)b[i]+=+p.amount;
 if(j>=0)b[j]-=+p.amount;
 });
@@ -245,7 +245,7 @@ function render(){
 let b=balances();
 $("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));
 $("memberCount").textContent=members.length+" / 6";
-let myIndex=N.indexOf(members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name"));
+let myIndex=(Array.isArray(N)?N:[]).indexOf(members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name"));
 let myBalance=myIndex>=0?(b[myIndex]||0):0;
 $("yourBalance").textContent=(myBalance>0?"+":myBalance<0?"−":"")+M(Math.abs(myBalance));
 $("yourBalanceLabel").textContent=myBalance>0?"You are owed":myBalance<0?"You owe":"All settled";
