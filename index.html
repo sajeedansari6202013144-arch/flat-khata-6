@@ -36,6 +36,44 @@ footer{text-align:center;padding:20px 0;color:#789488;font-size:10px}footer stro
 /* Flat Khata 6 master upgrade */
 .feature-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.feature-pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#17412e;color:#b8f5d7;font-size:11px}.feature-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px;border:1px solid #25483a;border-radius:13px;background:#0c1d16;margin:8px 0}.feature-item small{display:block;color:#8eaaa0}.feature-item strong{display:block}.receipt-thumb{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid #315447}.tabs{overflow-x:auto;justify-content:flex-start}.tabs button{min-width:66px;flex:0 0 66px}
 .welcome-strip{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 4px 12px}.welcome-strip small{color:var(--mint2);font-size:10px;letter-spacing:1.4px;font-weight:800}.welcome-strip h2{font-size:22px;margin:5px 0}.welcome-strip p{margin:0;color:var(--muted);font-size:12px}.welcome-strip img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--mint);background:#18372c}.dashboard-metrics{margin:6px 0 12px}.dashboard-card{padding:15px 16px}.dashboard-card h3{margin:0}.text-action{width:auto;min-height:30px;padding:4px 8px;margin:0;background:transparent;color:var(--mint2);font-size:11px}.person-label{display:inline-flex;align-items:center;gap:7px;vertical-align:middle}.person-label img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #3b8b68;background:#18372c;vertical-align:middle}.row .person-label img{width:30px;height:30px}.profile-item img{border:1px solid #3b8b68}
+
+/* Reference-matched premium Flat Khata home */
+:root{color-scheme:light;--bg:#f3f6fb;--panel:#fff;--panel2:#eef4f8;--line:#dce5ee;--mint:#0c9c8f;--mint2:#087d75;--text:#10243b;--muted:#718096;--red:#d64d68;--gold:#e6a83c}
+body{background:linear-gradient(180deg,#0b1d33 0,#0b1d33 235px,#f2f5fa 235px,#f7f9fc 100%);color:var(--text);padding:env(safe-area-inset-top) 13px calc(100px + env(safe-area-inset-bottom))}
+header{display:none}
+#status{background:#e7f7f4;color:#087d75;border-color:#c7e9e3}
+.card,.metric{background:#fff;color:#10243b;border-color:#e1e8f0;box-shadow:0 8px 22px #18324a0b}
+input,select{background:#fff;color:#10243b;border-color:#d7e1ea}
+.muted,small{color:#758398}
+.home-top{display:flex;align-items:center;justify-content:space-between;padding:18px 4px 10px;color:#fff}
+.home-brand{display:flex;align-items:center;gap:12px}.home-logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(140deg,#12c9b6,#078d9b);display:grid;place-items:center;color:white;font-size:32px;box-shadow:0 7px 18px #05b5a444}
+.home-brand h1{font-size:23px;color:#fff;letter-spacing:-.5px}.home-brand p{margin:3px 0 0;color:#c5d4e2;font-size:12px}
+.home-bell{width:46px;height:46px;min-height:46px;border-radius:15px;background:#ffffff12;border:1px solid #ffffff20;color:#fff;font-size:24px}
+.home-profile{display:flex;align-items:center;gap:13px;padding:13px 4px 17px;color:white;cursor:pointer}
+.home-profile img{width:76px;height:76px;object-fit:cover;border-radius:50%;border:3px solid #20c8b7;background:#dce8ef}
+.home-profile strong{display:block;font-size:19px}.home-profile small{display:block;color:#c5d4e2;font-size:12px;margin-top:3px}.home-profile>span{margin-left:auto;font-size:34px;color:#fff}
+.home-room-card{display:flex;align-items:center;background:#fff;border-radius:20px;padding:14px 12px;margin:4px 0 14px;box-shadow:0 8px 24px #0b1d3317;cursor:pointer}
+.room-info{display:flex;align-items:center;gap:9px;flex:1;min-width:0}.room-info+ .room-info{border-left:1px solid #e2e8ef;padding-left:12px;margin-left:8px}
+.room-info small{display:block;font-size:10px;color:#78869a}.room-info strong{display:block;font-size:15px;color:#10243b}.home-round-icon{width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:grid;place-items:center;background:#e5f6f3;color:#087d75;font-size:22px}
+.copy-room{width:auto;min-height:30px;padding:3px 6px;margin:0;background:transparent;color:#42556c;font-size:19px}
+.room-arrow{font-size:25px;color:#42556c}
+.home-total-card{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1px 1fr;align-items:center;gap:14px;padding:23px 20px;margin:0 0 15px;border-radius:22px;color:white;background:linear-gradient(115deg,#10223c,#123b55 55%,#087c79);box-shadow:0 12px 25px #0b315222}
+.home-total-card>div:not(.wave-decoration){position:relative;z-index:1}.home-total-card small{display:block;color:#c6d8e5;font-size:12px}.home-total-card strong{display:block;font-size:28px;letter-spacing:-.8px;margin-top:6px;color:#fff}.home-total-card div:nth-of-type(2) strong{color:#55e3d3}.home-total-card em{display:block;font-style:normal;color:#c6d8e5;font-size:11px}.home-total-card i{height:55px;background:#ffffff55}
+.wave-decoration{position:absolute;right:-20px;bottom:-52px;width:180px;height:90px;border-radius:50%;background:#23c8b230;filter:blur(2px)}
+.home-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:15px 0 17px}
+.home-quick button{min-height:91px;padding:10px 3px;border-radius:19px;background:#fff;color:#14283e;border:1px solid #e3eaf2;box-shadow:0 7px 18px #17334b0d;font-size:11px;font-weight:750}
+.home-quick button span{display:grid;place-items:center;margin:0 auto 8px;width:39px;height:39px;border-radius:13px;background:#e0f6f2;color:#078d83;font-size:25px}
+.home-panel{background:#fff;border:1px solid #e5ebf2;border-radius:21px;padding:15px 13px;margin:13px 0;box-shadow:0 7px 20px #18324a0a}
+.home-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.home-panel-head h2{font-size:18px;margin:0;color:#10243b}.home-panel-head button{width:auto;min-height:32px;margin:0;padding:4px 7px;background:transparent;color:#078d83;font-size:11px}
+.home-recent-list .row{padding:12px 3px;border-bottom:1px solid #e8edf2;color:#13263d}.home-recent-list .row>span:first-child{font-size:13px}.home-recent-list .row>span:last-child{white-space:nowrap;font-size:15px;color:#10243b}
+.home-recent-list .person-label img{width:39px;height:39px;border:0}.home-recent-list .row small{font-size:10px}
+.balance-panel .row{padding:12px 2px;color:#15283f}.balance-panel .row .person-label img{width:38px;height:38px;border:0}.balance-panel .row .pos,.balance-panel .row .neg{font-size:13px}
+.home-hidden-data{display:none!important}
+.tabs{background:#0b1d33f5;border-top:1px solid #29415b;padding:8px 7px calc(8px + env(safe-area-inset-bottom));justify-content:space-around;overflow:visible}
+.tabs button{min-width:0;flex:1 1 20%;color:#d4dfeb;font-size:10px}.tabs button b{font-size:21px;color:#e7f0f8}.tabs button.active{background:linear-gradient(145deg,#078f89,#087d83);color:white;box-shadow:inset 0 0 0 1px #48c6ba}.tabs button:nth-child(n+6){display:none}
+.person-label{color:inherit}.pos{color:#078d83}.neg{color:#d64d68}
+@media(max-width:380px){.home-total-card{padding:18px 14px;gap:10px}.home-total-card strong{font-size:24px}.home-profile img{width:66px;height:66px}.home-quick button{font-size:10px}}
+
 </style>
 </head>
 <body><main>
@@ -45,12 +83,36 @@ footer{text-align:center;padding:20px 0;color:#789488;font-size:10px}footer stro
 <div id="app" class="hidden"><div id="roomLabel"></div>
 <nav class="tabs"><button data-tab="home" class="active"><b>⌂</b>Home</button><button data-tab="add"><b>＋</b>Expenses</button><button data-tab="home"><b>₹</b>Balance</button><button data-tab="profile"><b>👤</b>Profile</button><button data-tab="personal"><b>🔒</b>Personal</button><button data-tab="reports"><b>▥</b>Reports</button><button data-tab="groups"><b>◫</b>Groups</button><button data-tab="wallet"><b>▣</b>Wallet</button><button data-tab="recurring"><b>↻</b>Recurring</button><button data-tab="settings"><b>⚙</b>Room</button></nav>
 <section id="home" class="section active">
-<div class="welcome-strip"><div><small>YOUR FLAT, AT A GLANCE</small><h2>Welcome back, <span id="homeMemberName">Sajeed</span></h2><p id="homeRoom">Shared living made simple</p></div><img id="homeAvatar" src="" alt="Profile"></div>
-<div class="grid dashboard-metrics"><div class="metric"><span>Total shared expenses</span><strong id="total">₹0</strong></div><div class="metric"><span>Flatmates</span><strong id="memberCount">0/6</strong></div></div>
-<div class="quick"><button data-go="add"><b>＋</b>Add expense</button><button data-go="profile"><b>♙</b>Members</button><button data-go="reports"><b>▥</b>Reports</button><button data-go="bills"><b>▤</b>Fixed bills</button></div>
-<div class="card dashboard-card"><div class="feature-head"><h3>Member balance</h3><span class="feature-pill">Live</span></div><div id="balances"></div></div>
-<div class="card dashboard-card"><div class="feature-head"><h3>Settle up</h3><span class="feature-pill">UPI</span></div><div id="settle"></div><p class="muted">Payments update balances after the receiver confirms.</p></div>
-<div class="card dashboard-card"><div class="feature-head"><h3>Recent expenses</h3><button class="text-action" data-go="history">View all</button></div><div id="recentList"></div></div>
+<div class="home-top">
+ <div class="home-brand"><div class="home-logo">⌂</div><div><h1>Flat Khata</h1><p>Shared Flat Expenses</p></div></div>
+ <button class="home-bell" id="notifyBtnHome" aria-label="Notifications">♧</button>
+</div>
+<div class="home-profile" data-go="profile"><img id="homeAvatar" src="" alt="Profile"><div><strong id="homeMemberName">Flatmate</strong><small id="homeRole">Flat member</small></div><span>›</span></div>
+<div class="home-room-card" data-go="profile">
+ <div class="room-info"><span class="home-round-icon">▦</span><div><small>Room Code</small><strong id="homeRoomCode">-----</strong></div><button id="copyRoomCode" class="copy-room" type="button">▢</button></div>
+ <div class="room-info"><span class="home-round-icon">♙</span><div><small>Members</small><strong id="memberCount">0 / 6</strong></div><span class="room-arrow">›</span></div>
+</div>
+<div class="home-total-card">
+ <div><small>Total Expenses</small><strong id="total">₹0</strong></div>
+ <i></i>
+ <div><small>Your Balance</small><strong id="yourBalance">₹0</strong><em id="yourBalanceLabel">Even</em></div>
+ <div class="wave-decoration"></div>
+</div>
+<div class="home-quick">
+ <button data-go="add"><span>＋</span>Add Expense</button>
+ <button data-go="profile"><span>♙</span>Members</button>
+ <button data-go="reports"><span>▥</span>Reports</button>
+ <button data-go="bills"><span>▤</span>Fixed Bills</button>
+</div>
+<div class="home-panel">
+ <div class="home-panel-head"><h2>Recent Expenses</h2><button data-go="history">View All ›</button></div>
+ <div id="recentList" class="home-recent-list"></div>
+</div>
+<div class="home-panel balance-panel">
+ <div class="home-panel-head"><h2>Member Balance</h2><button data-go="home">⇄ Settle Up</button></div>
+ <div id="balances"></div>
+</div>
+<div class="home-hidden-data"><div id="settle"></div></div>
 </section>
 <section id="add" class="section"><div class="card"><h3>Add expense</h3><input id="title" placeholder="Expense title"><div class="form-grid"><input id="amount" type="number" min=".01" step=".01" placeholder="Amount ₹"><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select><select id="payer"></select><input id="date" type="date"><input id="endDate" type="date"><select id="mode"><option value="equal">Equal split</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div><p class="muted">Who should share this expense?</p><div id="checks" class="members"></div><div id="custom" class="hidden"></div><button id="saveExpense">＋ Add expense</button></div></section>
 <section id="away" class="section"><div class="card"><h3>Away mode</h3><select id="awayName"></select><div class="form-grid"><input id="awayStart" type="date"><input id="awayEnd" type="date"></div><input id="reason" placeholder="Reason (optional)"><button id="saveAway">Save away days</button></div><div class="card"><h3>Away history</h3><div id="awayList"></div></div></section>
