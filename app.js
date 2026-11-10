@@ -499,11 +499,25 @@ $("upiValue").value="";alert("UPI ID saved.")
 }catch(e){alert(e.message)}
 };
 
-$("notifyBtn").onclick=async()=>{
-if(!("Notification"in window)){alert("This browser does not support notifications.");return}
-let p=await Notification.requestPermission();
-alert(p==="granted"?"Notifications enabled on this device.":"Notification permission was not granted.")
-};
+async function enablePushNotifications(){
+if(!("Notification"in window)||!("serviceWorker"in navigator)){alert("This browser does not support web push notifications. Install/open the app in Chrome.");return}
+const permission=await Notification.requestPermission();
+if(permission!=="granted"){alert("Notification permission was not granted. Allow notifications in Chrome site settings.");return}
+try{
+const [{getMessaging,getToken,onMessage}]=await Promise.all([import("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js")]);
+const registration=await navigator.serviceWorker.register("./firebase-messaging-sw.js");
+const messaging=getMessaging(app);
+const token=await getToken(messaging,{vapidKey:"BKnPPAQK1lRWcToqpJXR5DhMvp8g-oEYD0UJQMt8dEk--GcdRy6GQH68c2IcdcRObxW0ZXti4Ir4UKEt21Dl0jI",serviceWorkerRegistration:registration});
+if(!token)throw Error("FCM token was not generated. Check your Firebase Web Push certificate.");
+await setDoc(doc(db,"rooms",room,"pushTokens",uid),{uid,name:members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Member",token,updatedAt:serverTimestamp()},{merge:true});
+if(!window.fk6ForegroundPush){
+window.fk6ForegroundPush=true;
+onMessage(messaging,payload=>{const title=payload.notification?.title||"Flat Khata 6";const body=payload.notification?.body||"A flat activity was updated.";priorityNotice("normal",title,body);});
+}
+alert("Push notifications enabled. This device will receive flat activity alerts.");
+}catch(e){console.error(e);alert("Could not enable push notifications: "+e.message)}
+}
+$("notifyBtn").onclick=enablePushNotifications;
 
 const paymentReturnBox=document.createElement("div");
 paymentReturnBox.id="fk6PaymentReturn";
