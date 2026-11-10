@@ -233,6 +233,8 @@ if($("homeMemberName"))$("homeMemberName").textContent=myName;
 if($("homeRole"))$("homeRole").textContent=admin?"Flat Admin":"Flat Member";
 if($("homeRoomCode"))$("homeRoomCode").textContent=room||"-----";
 if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
+const selfMember=members.find(m=>m.uid===uid);
+if(selfMember&&$("myMemberSince")){const st=memberProfileStats(selfMember),pc=profileCompletion(mine,selfMember);$("myMemberSince").textContent=memberSinceLabel(selfMember);$("myContribution").textContent=M(st.contributed);$("mySettlements").textContent=String(st.completed);$("myProfileCompletion").textContent=pc.done+"/"+pc.total+" details · "+pc.percent+"% complete";$("myProfileCompletionBar").style.width=pc.percent+"%";}
 }
 function memberSinceLabel(member){
 const v=member?.joinedAt||member?.createdAt;
