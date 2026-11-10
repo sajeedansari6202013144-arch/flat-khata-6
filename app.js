@@ -110,7 +110,7 @@ if(!receiver){alert("Recipient member not found.");return;}
 let v=upis[to];
 if(!v){alert("No UPI ID saved for "+to+". Ask Sajeed to add it.");return;}
 let draft={from,to,amount,recipientUid:receiver.uid,createdAt:Date.now()};
-let upiUri="upi://pay?pa="+encodeURIComponent(v)+"&pn="+encodeURIComponent(to)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");
+let upiUri="upi://pay?pa="+encodeURIComponent(v)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Flat Khata 6 settlement");
 let overlay=document.createElement("div");
 overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto";
 let panel=document.createElement("div");
