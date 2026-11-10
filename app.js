@@ -150,7 +150,7 @@ function personalLock(){
 personalUnlocked=false;if(personalOff){personalOff();personalOff=null}
 $("personalOpen").classList.add("hidden");$("personalLocked").classList.remove("hidden");
 const hasPin=!!localStorage.getItem(personalKey());
-$("personalPin2").classList.toggle("hidden",hasPin);
+$("personalPin2").style.display=hasPin?"none":"block";
 $("pinPrompt").textContent=hasPin?"Enter your 6-digit MPIN.":"Create a 6-digit MPIN for this account.";
 $("personalUnlock").textContent=hasPin?"Unlock Personal Expenses":"Set MPIN and unlock";
 $("personalPin").placeholder=hasPin?"Enter 6-digit MPIN":"6-digit MPIN";
@@ -163,7 +163,7 @@ if(!/^\d{6}$/.test(pin))throw Error("MPIN must contain exactly 6 digits.");
 if(!stored){
 if(pin!==confirmPin)throw Error("MPIN entries do not match.");
 const salt=crypto.randomUUID(),hash=await pinHash(pin,salt);
-localStorage.setItem(personalKey(),JSON.stringify({salt,hash}));
+localStorage.setItem(personalKey(),JSON.stringify({salt,hash}));$("personalPin2").style.display="none";
 }else{
 const saved=JSON.parse(stored);
 if(await pinHash(pin,saved.salt)!==saved.hash)throw Error("Incorrect MPIN.");
@@ -186,6 +186,10 @@ function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;",
 
 
 function avatarFallback(name){return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" rx="60" fill="#1b4938"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="48" fill="#9af0c7" font-family="Arial">'+String(name||"?").slice(0,1).toUpperCase()+'</text></svg>')}
+function personLabel(name){
+const m=members.find(x=>x.name===name),p=m?profiles[m.uid]||{}:{};
+return '<span class="person-label"><img src="'+(p.photo||avatarFallback(name))+'" alt="">'+escapeHtml(name)+'</span>';
+}
 function renderProfiles(){
 $("memberProfiles").innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small></div></div>'}).join("");
 const mine=profiles[uid]||{},img=$("profileAvatar");
@@ -228,7 +232,7 @@ function render(){
 let b=balances();
 $("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));
 $("memberCount").textContent=members.length+"/6";
-$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${n} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");
+$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${personLabel(n)} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");
 let ss=settlements();
 let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 $("settle").innerHTML=ss.map(x=>{
