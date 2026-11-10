@@ -197,6 +197,8 @@ if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
 const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
 if(homeImg)homeImg.src=mine.photo||avatarFallback(myName);
 if($("homeMemberName"))$("homeMemberName").textContent=myName;
+if($("homeRole"))$("homeRole").textContent=admin?"Flat Admin":"Flat Member";
+if($("homeRoomCode"))$("homeRoomCode").textContent=room||"-----";
 if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
 }
 async function loadMyProfile(){
@@ -235,7 +237,11 @@ function showTab(id){if(id==="profile")loadMyProfile().catch(e=>alert("Profile c
 function render(){
 let b=balances();
 $("total").textContent=M(expenses.reduce((a,e)=>a+(+e.amount||0),0));
-$("memberCount").textContent=members.length+"/6";
+$("memberCount").textContent=members.length+" / 6";
+let myIndex=N.indexOf(members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name"));
+let myBalance=myIndex>=0?(b[myIndex]||0):0;
+$("yourBalance").textContent=(myBalance>0?"+":myBalance<0?"−":"")+M(Math.abs(myBalance));
+$("yourBalanceLabel").textContent=myBalance>0?"You are owed":myBalance<0?"You owe":"All settled";
 $("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${personLabel(n)} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");
 let ss=settlements();
 let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
@@ -245,7 +251,8 @@ return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} 
 }).join("")||"All settled.";
 let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
-$("recentList").innerHTML=expenses.slice(0,5).map(exp).join("")||"No expenses yet.";
+const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧",Wi-Fi:"⌁", "Gas cylinder":"♨",Other:"▤"};
+$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
 $("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
 document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
@@ -416,6 +423,8 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&personalUn
 setInterval(()=>{if(personalUnlocked&&Date.now()-personalLastTouch>120000)personalLock()},10000);
 
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showTab(b.dataset.go));
+$("notifyBtnHome").onclick=()=>$("notifyBtn").click();
+$("copyRoomCode").onclick=()=>{if(room&&navigator.clipboard?.writeText)navigator.clipboard.writeText(room).then(()=>alert("Room code copied: "+room)).catch(()=>alert("Room code: "+room));else alert("Room code: "+room)};
 
 $("mode").onchange=()=>$("custom").classList.toggle("hidden",$("mode").value!=="custom");
 
