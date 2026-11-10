@@ -337,6 +337,62 @@ profiles[uid]=data;renderProfiles();alert("Profile saved and synced for all flat
 
 function applyAppearance(){const theme=localStorage.getItem("fk6_theme")||"light";const size=localStorage.getItem("fk6_font")||"medium";const dark=theme==="dark"||(theme==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.body.classList.toggle("fk-dark",dark);document.body.style.fontSize=size==="small"?"13px":size==="large"?"16px":"14px";if($("themePreference"))$("themePreference").value=theme;if($("fontPreference"))$("fontPreference").value=size;}
 applyAppearance();
+
+const languageText={
+hi:{
+"App language":"ऐप की भाषा","Appearance":"दिखावट","Choose how Flat Khata looks on your device.":"अपने डिवाइस पर फ्लैट खाता की दिखावट चुनें।","Theme":"थीम","Light":"लाइट","Dark":"डार्क","System default":"सिस्टम के अनुसार","Font size":"फ़ॉन्ट का आकार","Small":"छोटा","Medium":"मध्यम","Large":"बड़ा","Save preferences":"सेटिंग सेव करें","Notifications":"सूचनाएँ","Room activity notifications":"रूम गतिविधि की सूचनाएँ","Settlement notifications":"हिसाब भुगतान की सूचनाएँ","Save notification preferences":"सूचना सेटिंग सेव करें","Privacy & Security":"गोपनीयता और सुरक्षा","Manage your account details and personal data.":"अपने खाते की जानकारी और निजी डेटा संभालें।","Open profile":"प्रोफ़ाइल खोलें","Home":"होम","Dashboard overview":"डैशबोर्ड","Room Activity":"रूम गतिविधि","Latest flat updates":"फ्लैट की नई गतिविधियाँ","Settlement":"हिसाब भुगतान","Pending balances and payments":"बाकी हिसाब और भुगतान","My Profile":"मेरी प्रोफ़ाइल","Your personal details":"आपकी निजी जानकारी","Reports":"रिपोर्ट","Expense summaries":"खर्च का विवरण","Settings":"सेटिंग्स","Appearance and preferences":"दिखावट और पसंद","Log out":"लॉग आउट","Sign out from this device":"इस डिवाइस से लॉग आउट करें","Quick Menu":"क्विक मेन्यू","Total Expenses":"कुल खर्च","Add expense":"खर्च जोड़ें","Expense history":"खर्च का इतिहास","Settle Up":"हिसाब चुकाएँ","Settlement History":"भुगतान का इतिहास","Pay your outstanding balance in full or in parts.":"अपना बाकी हिसाब पूरा या थोड़ा-थोड़ा चुकाएँ।","Latest updates from your flat.":"आपके फ्लैट की नई गतिविधियाँ।","Save profile":"प्रोफ़ाइल सेव करें","Name":"नाम","Email":"ईमेल","Phone":"मोबाइल नंबर","Member since":"सदस्य बने","Total expenses contributed":"कुल जमा खर्च","Settlements completed":"पूरे हुए भुगतान","Profile completion":"प्रोफ़ाइल पूरी","Date unavailable":"तारीख उपलब्ध नहीं"
+},
+de:{
+"App language":"App-Sprache","Appearance":"Darstellung","Choose how Flat Khata looks on your device.":"Wähle das Erscheinungsbild von Flat Khata auf deinem Gerät.","Theme":"Design","Light":"Hell","Dark":"Dunkel","System default":"Systemstandard","Font size":"Schriftgröße","Small":"Klein","Medium":"Mittel","Large":"Groß","Save preferences":"Einstellungen speichern","Notifications":"Benachrichtigungen","Room activity notifications":"Benachrichtigungen zu Aktivitäten","Settlement notifications":"Zahlungsbenachrichtigungen","Save notification preferences":"Benachrichtigungseinstellungen speichern","Privacy & Security":"Datenschutz & Sicherheit","Manage your account details and personal data.":"Verwalte deine Kontodaten und persönlichen Informationen.","Open profile":"Profil öffnen","Home":"Startseite","Dashboard overview":"Dashboard-Übersicht","Room Activity":"Raumaktivität","Latest flat updates":"Neueste WG-Aktivitäten","Settlement":"Abrechnung","Pending balances and payments":"Offene Beträge und Zahlungen","My Profile":"Mein Profil","Your personal details":"Deine persönlichen Angaben","Reports":"Berichte","Expense summaries":"Ausgabenübersicht","Settings":"Einstellungen","Appearance and preferences":"Darstellung und Präferenzen","Log out":"Abmelden","Sign out from this device":"Von diesem Gerät abmelden","Quick Menu":"Schnellmenü","Total Expenses":"Gesamtausgaben","Add expense":"Ausgabe hinzufügen","Expense history":"Ausgabenverlauf","Settle Up":"Ausgleichen","Settlement History":"Zahlungsverlauf","Pay your outstanding balance in full or in parts.":"Begleiche deinen offenen Betrag vollständig oder teilweise.","Latest updates from your flat.":"Neueste Updates aus deiner WG.","Save profile":"Profil speichern","Name":"Name","Email":"E-Mail","Phone":"Telefon","Member since":"Mitglied seit","Total expenses contributed":"Beigetragene Gesamtausgaben","Settlements completed":"Abgeschlossene Zahlungen","Profile completion":"Profilvollständigkeit","Date unavailable":"Datum nicht verfügbar"
+},
+bho:{
+"App language":"ऐप के भाषा","Appearance":"रूप-रंग","Choose how Flat Khata looks on your device.":"आपके मोबाइल पर फ्लैट खाता कइसन देखाई, चुनीं।","Theme":"थीम","Light":"हल्का","Dark":"गाढ़ा","System default":"मोबाइल के हिसाब से","Font size":"लिखाई के आकार","Small":"छोट","Medium":"मध्यम","Large":"बड़","Save preferences":"सेटिंग सेव करीं","Notifications":"सूचना","Room activity notifications":"फ्लैट के गतिविधि के सूचना","Settlement notifications":"हिसाब-किताब के सूचना","Save notification preferences":"सूचना सेटिंग सेव करीं","Privacy & Security":"निजता आ सुरक्षा","Manage your account details and personal data.":"अपना खाता आ निजी जानकारी संभालीं।","Open profile":"प्रोफाइल खोलीं","Home":"होम","Dashboard overview":"मुख्य पन्ना","Room Activity":"फ्लैट के गतिविधि","Latest flat updates":"फ्लैट के नया खबर","Settlement":"हिसाब-किताब","Pending balances and payments":"बाकी हिसाब आ भुगतान","My Profile":"हमार प्रोफाइल","Your personal details":"रउआ के निजी जानकारी","Reports":"रिपोर्ट","Expense summaries":"खर्च के ब्योरा","Settings":"सेटिंग","Appearance and preferences":"रूप-रंग आ पसंद","Log out":"लॉग आउट","Sign out from this device":"एह मोबाइल से लॉग आउट करीं","Quick Menu":"जल्दी मेन्यू","Total Expenses":"कुल खर्च","Add expense":"खर्चा जोड़ीं","Expense history":"खर्चा के इतिहास","Settle Up":"हिसाब चुकाईं","Settlement History":"भुगतान के इतिहास","Pay your outstanding balance in full or in parts.":"आपन बाकी हिसाब पूरा भा थोड़ा-थोड़ा चुकाईं।","Latest updates from your flat.":"रउआ फ्लैट के नया गतिविधि।","Save profile":"प्रोफाइल सेव करीं","Name":"नाम","Email":"ईमेल","Phone":"मोबाइल नंबर","Member since":"सदस्य कब से","Total expenses contributed":"कुल जमा खर्च","Settlements completed":"पूरा भइल भुगतान","Profile completion":"प्रोफाइल पूरा","Date unavailable":"तारीख नइखे उपलब्ध"
+}};
+const languageOriginalNodes=new WeakMap();
+const languageOriginalAttrs=new WeakMap();
+function translateLanguageNode(node,lang){
+ if(!node)return;
+ const dict=languageText[lang]||{};
+ if(node.nodeType===Node.TEXT_NODE){
+  const current=node.nodeValue;
+  let rec=languageOriginalNodes.get(node);
+  if(!rec){rec={source:current,last:current};languageOriginalNodes.set(node,rec);}
+  else if(current!==rec.last){rec.source=current;}
+  let value=rec.source;
+  for(const [en,tr] of Object.entries(dict)){if(value.trim()===en){const lead=value.match(/^\s*/)?.[0]||"",tail=value.match(/\s*$/)?.[0]||"";value=lead+tr+tail;break;}}
+  node.nodeValue=value;rec.last=value;
+ }else if(node.nodeType===Node.ELEMENT_NODE){
+  if(["SCRIPT","STYLE"].includes(node.tagName))return;
+  for(const attr of ["placeholder","title","aria-label"]){
+   if(!node.hasAttribute(attr))continue;
+   let rec=languageOriginalAttrs.get(node);if(!rec){rec={};languageOriginalAttrs.set(node,rec);}
+   const current=node.getAttribute(attr);
+   if(!(attr in rec))rec[attr]={source:current,last:current};
+   else if(current!==rec[attr].last)rec[attr].source=current;
+   const source=rec[attr].source;
+   node.setAttribute(attr,dict[source]||source);rec[attr].last=node.getAttribute(attr);
+  }
+  for(const child of node.childNodes)translateLanguageNode(child,lang);
+ }
+}
+function applyLanguage(lang){
+ localStorage.setItem("fk6_language",lang);
+ document.documentElement.lang=lang==="hi"?"hi":lang==="de"?"de":lang==="bho"?"bho":"en";
+ translateLanguageNode(document.body,lang);
+ if($("languagePreference"))$("languagePreference").value=lang;
+}
+const savedLanguage=localStorage.getItem("fk6_language")||"en";
+applyLanguage(savedLanguage);
+if($("languagePreference"))$("languagePreference").onchange=()=>applyLanguage($("languagePreference").value);
+const languageObserver=new MutationObserver(records=>{
+ const lang=localStorage.getItem("fk6_language")||"en";
+ for(const record of records){
+  if(record.type==="childList")record.addedNodes.forEach(n=>translateLanguageNode(n,lang));
+  else if(record.type==="characterData")translateLanguageNode(record.target,lang);
+ }
+});
+languageObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+
 $("saveAppearance").onclick=()=>{localStorage.setItem("fk6_theme",$("themePreference").value);localStorage.setItem("fk6_font",$("fontPreference").value);applyAppearance();alert("Appearance preferences saved.");};
 $("saveNotificationPrefs").onclick=()=>{localStorage.setItem("fk6_activity_notifications",$("activityNotifications").checked?"1":"0");localStorage.setItem("fk6_payment_notifications",$("paymentNotifications").checked?"1":"0");alert("Notification preferences saved.");};
 $("activityNotifications").checked=localStorage.getItem("fk6_activity_notifications")!=="0";$("paymentNotifications").checked=localStorage.getItem("fk6_payment_notifications")!=="0";
