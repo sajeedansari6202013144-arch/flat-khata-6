@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -275,6 +275,7 @@ onSnapshot(collection(db,"rooms",room,"fixedBills"),s=>{
 bills=s.docs.map(d=>({id:d.id,...d.data()}));renderExtras()
 }),
 onSnapshot(collection(db,"rooms",room,"settlements"),s=>{
+for(const c of s.docChanges()){if(c.type!=="added"&&c.type!=="modified")continue;const p=c.doc.data();if(c.type==="added"&&p.recipientUid===uid&&p.status==="pending")priorityNotice("high","Payment confirmation needed",p.from+" says they paid "+M(p.amount)+". Confirm only after receiving it.");if(c.type==="modified"&&p.createdBy===uid&&p.status==="confirmed")priorityNotice("high","Payment confirmed",p.to+" confirmed your payment of "+M(p.amount)+".");}
 payments=s.docs.map(d=>({id:d.id,...d.data()}));render()
 }),
 onSnapshot(doc(db,"rooms",room,"settings","budget"),s=>{
@@ -292,6 +293,10 @@ $("roomLabel").textContent="Room code: "+room+(admin?" · Permanent Admin":" · 
 
 let firstExpenseSnapshot=true,firstAwaySnapshot=true;
 
+function priorityNotice(level,title,body){
+msg((level==='high'?'Important: ':'')+body);
+if('Notification'in window&&Notification.permission==='granted'&&!document.hidden){try{new Notification(title,{body,tag:'fk6-'+level,renotify:true})}catch(e){}}
+}
 function notifyActivity(type,changes){
 let first=type==="expense"?firstExpenseSnapshot:firstAwaySnapshot;
 if(type==="expense")firstExpenseSnapshot=false;
@@ -302,9 +307,7 @@ if(c.type!=="added")continue;
 let d=c.doc.data();
 if(d.createdBy===uid)continue;
 let message=type==="expense"?`${d.createdByName||d.payer} added ${d.title||"an expense"} (${M(d.amount)})`:`${d.name} added away dates`;
-if("Notification"in window&&Notification.permission==="granted")
-new Notification("Flat Khata 6",{body:message});
-else msg("New activity: "+message)
+priorityNotice(type==="expense"?"normal":"low",type==="expense"?"New shared expense":"Away mode updated",message)
 }
 }
 
@@ -352,7 +355,7 @@ $("personalUnlock").onclick=()=>personalUnlock().catch(e=>alert(e.message));
 $("personalLock").onclick=personalLock;
 $("personalSave").onclick=async()=>{try{if(!personalUnlocked)throw Error("Unlock Personal Expenses first.");const title=$("personalTitle").value.trim(),amount=Number($("personalAmount").value),date=$("personalDate").value||new Date().toISOString().slice(0,10);if(!title||!Number.isFinite(amount)||amount<=0)throw Error("Enter a title and valid amount.");await addDoc(collection(db,"users",uid,"personalExpenses"),{title,amount,date,category:$("personalCategory").value,note:$("personalNote").value.trim(),ownerUid:uid,createdAt:serverTimestamp()});$("personalTitle").value="";$("personalAmount").value="";$("personalNote").value="";}catch(e){alert(e.message)}};
 $("personalChangePin").onclick=()=>{const next=prompt("Enter a new 6-digit MPIN");if(!/^\\d{6}$/.test(next||"")){alert("MPIN must contain exactly 6 digits.");return}const again=prompt("Confirm new MPIN");if(next!==again){alert("MPINs do not match.");return}crypto.randomUUID&&pinHash(next,crypto.randomUUID()).then(hash=>{const salt=crypto.randomUUID();return pinHash(next,salt).then(h=>localStorage.setItem(personalKey(),JSON.stringify({salt,hash:h}))) }).then(()=>alert("MPIN changed."))};
-$("personalReset").onclick=async()=>{try{const email=prompt("Enter your account email"),password=prompt("Enter your account password");if(!email||!password) return;await signInWithEmailAndPassword(auth,email,password);localStorage.removeItem(personalKey());$("pinPrompt").textContent="Set a new 6-digit MPIN.";alert("Account verified. Set a new MPIN now.");}catch(e){alert("Account verification failed: "+e.message)}};
+$("personalReset").onclick=async()=>{try{const email=prompt("Enter your account email"),password=prompt("Enter your account password");if(!email||!password) return;await reauthenticateWithCredential(auth.currentUser,EmailAuthProvider.credential(email,password));localStorage.removeItem(personalKey());$("pinPrompt").textContent="Set a new 6-digit MPIN.";alert("Account verified. Set a new MPIN now.");}catch(e){alert("Account verification failed: "+e.message)}};
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&personalUnlocked)personalLock()});
 ["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{if(personalUnlocked)personalLastTouch=Date.now()},{passive:true}));
 setInterval(()=>{if(personalUnlocked&&Date.now()-personalLastTouch>120000)personalLock()},10000);
