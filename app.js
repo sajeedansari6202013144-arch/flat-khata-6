@@ -101,6 +101,7 @@ async function connectRoomForSignedInUser(code){
 }
 $("fk6SignIn").onclick=async()=>{
  try{
+ await persistenceTask;
  const email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value,code=$("code").value.trim().toUpperCase();
  if(!email||!password)throw Error("Enter your email and password.");
  if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
@@ -746,9 +747,11 @@ let authStateReceived=false;
 const authStartupTimer=setTimeout(()=>{if(!authStateReceived&&$("status"))msg("Firebase sign-in is taking too long. Check internet access and allow site data in Chrome.");},10000);
 
 onAuthStateChanged(auth,async u=>{
+await persistenceTask;
+u=auth.currentUser;
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
-$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Continue to my flat";
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="First-time sign in";
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
