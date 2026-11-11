@@ -687,11 +687,14 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)showPaymen
 window.addEventListener("focus",showPaymentReturn);
 window.addEventListener("pageshow",showPaymentReturn);
 
-try{await setPersistence(auth,browserLocalPersistence);}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);msg("Sign-in storage issue: "+(persistenceError?.message||"Please reload the page."));}
 window.addEventListener("error",event=>{console.error("Flat Khata startup error",event.error||event.message);if($("status"))msg("App error: "+(event.message||"Please reload the page."));});
 window.addEventListener("unhandledrejection",event=>{console.error("Flat Khata async error",event.reason);if($("status"))msg("Connection error: "+(event.reason?.message||"Please reload the page."));});
+const persistenceTask=setPersistence(auth,browserLocalPersistence).catch(persistenceError=>{console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in storage issue: "+(persistenceError?.message||"Please reload the page."));});
+let authStateReceived=false;
+const authStartupTimer=setTimeout(()=>{if(!authStateReceived&&$("status"))msg("Firebase sign-in is taking too long. Check internet access and allow site data in Chrome.");},10000);
 
 onAuthStateChanged(auth,async u=>{
+authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
