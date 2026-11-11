@@ -28,13 +28,13 @@ document.addEventListener("click",async event=>{
  if(dateInput&&!dateInput.value)dateInput.value=today;
  if(endInput&&!endInput.value)endInput.value=dateInput?.value||today;
  const amount=Number(document.getElementById("amount")?.value);
- const title=document.getElementById("title")?.value.trim()||"";
+ const title=document.getElementById("title")?.value.trim()||"Expense";
  const date=dateInput?.value||today,end=endInput?.value||date;
  const selected=[...document.querySelectorAll(".part:checked")].map(x=>x.value);
  const mode=document.getElementById("mode")?.value||"equal";
  try{
   if(!uid||!room||!db)throw Error("Your flat is not connected. Reopen the app and connect using your room code.");
-  if(!title||!Number.isFinite(amount)||amount<=0||!date||end<date||!selected.length)throw Error("Please enter an expense title, a valid amount, dates, and select at least one member.");
+  if(!Number.isFinite(amount)||amount<=0||!date||end<date||!selected.length)throw Error("Please enter a valid amount, dates, and select at least one member.");
   let shares=[];
   if(mode==="custom"){
    shares=[...document.querySelectorAll(".share")].filter(x=>selected.includes(x.dataset.name)).map(x=>({name:x.dataset.name,amount:Number(x.value)||0}));
@@ -471,10 +471,10 @@ $("settle").innerHTML=ss.map(x=>{
 let pending=payments.filter(p=>p.status==="pending"&&p.from===x.from&&p.to===x.to).reduce((a,p)=>a+Number(p.amount||0),0),left=Math.max(0,x.amount-pending);
 return `<div class="row"><span>${personLabel(x.from)} pays ${personLabel(x.to)} <b>${M(x.amount)}</b>${pending?`<br><small>${M(pending)} awaiting confirmation</small>`:""}</span>${x.from===me&&left>.005?`<button style="width:auto" data-pay="${x.to}" data-amount="${left}">Pay part</button>`:""}</div>`
 }).join("")||"All settled.";
-let exp=e=>`<div class="row"><span><b>${e.title}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>Added at ${expenseAddedTime(e)}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
+let exp=e=>`<div class="row"><span><b>${e.title||"Expense"}</b><br><small>${e.category}, paid by ${personLabel(e.payer)}, ${e.date||""}</small><br><small>Added at ${expenseAddedTime(e)}</small><br><small>${(e.shares||[]).map(s=>personLabel(s.name)+" "+M(s.amount)).join(", ")}</small></span><span><b>${M(e.amount)}</b>${admin?`<button class="danger" data-del="${e.id}">Delete</button>`:""}</span></div>`;
 $("historyList").innerHTML=expenses.map(exp).join("")||"No expenses yet.";
 const categoryIcon={Groceries:"🛒",Electricity:"ϟ",Food:"♨",Rent:"⌂",Water:"💧","Wi-Fi":"⌁", "Gas cylinder":"♨",Other:"▤"};
-if($("recentList"))$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title)+' · '+escapeHtml(e.date||"")+' · Added '+expenseAddedTime(e)+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
+if($("recentList"))$("recentList").innerHTML=expenses.slice(0,4).map(e=>'<div class="row"><span>'+personLabel(e.payer)+'<br><small>'+(categoryIcon[e.category]||"▤")+' '+escapeHtml(e.title||"Expense")+' · '+escapeHtml(e.date||"")+' · Added '+expenseAddedTime(e)+'</small></span><span><b>'+M(e.amount)+'</b></span></div>').join("")||'<p class="muted">No expenses yet.</p>';
 $("awayList").innerHTML=away.map(a=>`<div class="row">${personLabel(a.name)}: ${a.start} to ${a.end} ${admin?`<button class="danger" data-away="${a.id}">Delete</button>`:""}</div>`).join("")||"No away records.";
 document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>admin&&confirm("Delete expense?")&&deleteDoc(doc(db,"rooms",room,"expenses",b.dataset.del)));
 document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>admin&&confirm("Delete away period?")&&deleteDoc(doc(db,"rooms",room,"absences",b.dataset.away)));
@@ -491,7 +491,7 @@ $("categoryReport").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([
 let spent=sum;
 $("budgetStatus").textContent=budget?`Budget ${M(budget)} · Used ${M(spent)} · Remaining ${M(budget-spent)}${spent>budget?" · Budget exceeded!":""}`:"No monthly budget set.";
 if(budget&&spent>budget&&localStorage.getItem("fk6_budget_alert_"+month)!=="yes"){alert("Monthly budget exceeded. Spent "+M(spent)+" of "+M(budget));localStorage.setItem("fk6_budget_alert_"+month,"yes")}
-let acts=[...expenses.map(e=>({t:e.createdAt?.toDate?.()||new Date(e.date||Date.now()),s:`${e.createdByName||e.payer} added ${e.title} · ${M(e.amount)}`})),...away.map(a=>({t:new Date(a.start),s:`${a.name} recorded away days ${a.start} to ${a.end}`}))].sort((a,b)=>b.t-a.t);
+let acts=[...expenses.map(e=>({t:e.createdAt?.toDate?.()||new Date(e.date||Date.now()),s:`${e.createdByName||e.payer} added ${M(e.amount)}${e.createdByName&&e.payer&&e.createdByName!==e.payer?" on "+e.payer+" behalf":""}${e.title&&e.title!=="Expense"?" · "+e.title:""}`})),...away.map(a=>({t:new Date(a.start),s:`${a.name} recorded away days ${a.start} to ${a.end}`}))].sort((a,b)=>b.t-a.t);
 $("activityList").innerHTML=acts.slice(0,25).map(a=>`<div class="row">${a.s}</div>`).join("")||"No activity yet.";
 $("billList").innerHTML=bills.map(x=>`<div class="row"><span><b>${x.title}</b><br><small>${x.category}, paid by ${x.payer}</small></span><b>${M(x.amount)}</b></div>`).join("")||"No fixed bills saved.";
 $("settlementList").innerHTML=payments.slice().sort((a,b)=>Number(b.createdAt?.seconds||0)-Number(a.createdAt?.seconds||0)).map(x=>`<div class="card" style="margin:10px 0;padding:12px"><div class="row"><span>${personLabel(x.from)} → ${personLabel(x.to)} <b>${M(x.amount)}</b><br><small>${x.paymentMode==="cash"?"Cash":"UPI"} · ${x.date||""} · ${x.status||"legacy record"}</small></span><b>${x.status==="confirmed"?"✓ Confirmed":x.status==="pending"?"Pending":"Cancelled"}</b></div>${x.proofImage?`<a href="${x.proofImage}" target="_blank" rel="noopener"><img src="${x.proofImage}" alt="Payment proof" style="display:block;width:100%;max-width:230px;max-height:180px;object-fit:contain;border-radius:10px;background:#f2f4f3;margin:8px auto"></a>`:""}${x.status==="pending"&&x.recipientUid===uid?`<button style="width:100%;margin-top:8px" data-confirm="${x.id}">Accept & confirm received</button>`:""}${x.status==="pending"&&x.createdBy===uid?`<button class="danger" style="width:100%;margin-top:8px" data-cancel="${x.id}">Cancel request</button>`:""}</div>`).join("")||"No payments recorded.";
@@ -644,7 +644,7 @@ $("mode").onchange=()=>$("custom").classList.toggle("hidden",$("mode").value!=="
 $("saveExpense").onclick=async()=>{
 try{
 let amount=+$("amount").value,date=$("date").value,end=$("endDate").value||date,selected=[...document.querySelectorAll(".part:checked")].map(x=>x.value),mode=$("mode").value;
-if(!$("title").value.trim()||amount<=0||!date||end<date||!selected.length)throw Error("Fill all fields and select members.");
+if(amount<=0||!date||end<date||!selected.length)throw Error("Enter a valid amount and dates, then select at least one member.");
 let shares=[];
 if(mode==="custom"){
 shares=[...document.querySelectorAll(".share")].filter(x=>selected.includes(x.dataset.name)).map(x=>({name:x.dataset.name,amount:+x.value||0}));
