@@ -9,9 +9,13 @@ import android.webkit.WebSettings;
 import android.content.Intent;
 import android.net.Uri;
 import android.webkit.WebResourceRequest;
+import android.webkit.ValueCallback;
+import android.provider.MediaStore;
 
 public class MainActivity extends Activity {
     private WebView web;
+    private ValueCallback<Uri[]> fileChooserCallback;
+    private static final int FILE_CHOOSER_REQUEST = 4106;
     private static final String HOME = "https://sajeedansari6202013144-arch.github.io/flat-khata-6/";
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -25,7 +29,23 @@ public class MainActivity extends Activity {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
         settings.setSupportZoom(false);
-        web.setWebChromeClient(new WebChromeClient());
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                if (fileChooserCallback != null) fileChooserCallback.onReceiveValue(null);
+                fileChooserCallback = callback;
+                Intent pick = new Intent(Intent.ACTION_GET_CONTENT);
+                pick.addCategory(Intent.CATEGORY_OPENABLE);
+                pick.setType("image/*");
+                try {
+                    startActivityForResult(Intent.createChooser(pick, "Choose profile photo"), FILE_CHOOSER_REQUEST);
+                    return true;
+                } catch (Exception e) {
+                    fileChooserCallback = null;
+                    callback.onReceiveValue(null);
+                    return false;
+                }
+            }
+        });
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return route(request.getUrl().toString());
@@ -50,6 +70,18 @@ public class MainActivity extends Activity {
             return true;
         }
         return false;
+    }
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_REQUEST && fileChooserCallback != null) {
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                Uri selected = data.getData();
+                if (selected != null) results = new Uri[]{selected};
+            }
+            fileChooserCallback.onReceiveValue(results);
+            fileChooserCallback = null;
+        }
     }
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
     @Override public void onBackPressed() { if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed(); }
