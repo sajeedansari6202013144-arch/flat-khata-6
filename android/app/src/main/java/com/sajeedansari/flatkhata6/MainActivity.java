@@ -24,6 +24,8 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
+        // Always fetch the latest hosted app files instead of reusing stale WebView assets.
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setLoadWithOverviewMode(true);
@@ -57,7 +59,8 @@ public class MainActivity extends Activity {
         setContentView(web);
         android.webkit.CookieManager.getInstance().setAcceptCookie(true);
         android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
-        if (state == null) web.loadUrl(HOME); else web.restoreState(state);
+        web.clearCache(true);
+        web.loadUrl(HOME + "?apk_refresh=20261111");
     }
     private boolean route(String url) {
         if (url.startsWith("upi:") || url.startsWith("intent:") || url.startsWith("tel:") || url.startsWith("mailto:")) {
