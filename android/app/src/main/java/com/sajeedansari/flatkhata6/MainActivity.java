@@ -35,6 +35,8 @@ public class MainActivity extends Activity {
             }
         });
         setContentView(web);
+        android.webkit.CookieManager.getInstance().setAcceptCookie(true);
+        android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
         if (state == null) web.loadUrl(HOME); else web.restoreState(state);
     }
     private boolean route(String url) {
