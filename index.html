@@ -198,6 +198,41 @@ body.fk-dark .expense-composer{background:#eaf5f2!important;color:#193b37!import
  .expense-composer .members label{padding:7px 6px!important;font-size:11px!important}
 }
 
+
+/* Exact dark teal reference styling for Add Expense */
+.expense-composer{background:linear-gradient(155deg,#0b1d29 0%,#07131e 100%)!important;color:#f4fbff!important;border:1px solid #183846!important;border-radius:28px!important;padding:20px!important;box-shadow:0 18px 45px #0007,inset 0 1px #ffffff08!important}
+.expense-heading{gap:14px;margin-bottom:18px}
+.expense-heading h3{color:#f5fbff!important;font-size:23px!important;font-weight:800!important}
+.expense-receipt-emoji{margin-left:5px;font-size:22px}
+.expense-close{background:#172b39!important;color:#f4fbff!important;border:1px solid #294655!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+.expense-amount-card{background:linear-gradient(145deg,#132b39,#0e202d)!important;border:1px solid #203e4c!important;border-radius:23px!important;padding:17px!important;margin:9px 0 17px!important;box-shadow:inset 0 1px #ffffff08,0 8px 20px #0002!important}
+.expense-amount-card>label{color:#a9c2d0!important;font-size:13px!important;font-weight:750!important}
+.expense-amount-input{border-bottom:2px solid #4ccbb8!important;margin-bottom:13px!important}
+.expense-amount-input>span{color:#50e4c5!important;font-size:34px!important}
+.expense-amount-input input{color:#5aebca!important;font-size:43px!important;font-weight:850!important}
+.expense-amount-input input::placeholder{color:#78949f!important}
+.expense-title-input{background:#142b39!important;border:1px solid #294858!important;color:#f3fbff!important;border-radius:14px!important}
+.expense-title-input::placeholder{color:#a3b9c6!important}
+.expense-options-card{background:linear-gradient(120deg,#152b39,#102331)!important;border:1px solid #1b3948!important;border-radius:20px!important;padding:5px 14px!important;margin:12px 0!important;box-shadow:0 7px 18px #0002!important}
+.expense-option-row{min-height:58px!important;padding:8px 0!important;border-bottom:1px solid #29414d!important;grid-template-columns:40px minmax(62px,.8fr) minmax(0,1.3fr)!important}
+.expense-option-icon{background:#193747!important;color:#53e1c4!important;border:1px solid #285364!important;border-radius:12px!important;font-size:19px!important}
+.expense-option-row>label,.expense-option-row>span:not(.expense-option-icon){color:#e1edf4!important;font-size:14px!important;font-weight:650!important}
+.expense-option-row select,.expense-dates input{color:#f3f8fc!important;font-size:14px!important;font-weight:750!important}
+.expense-dates span{color:#91a9b7!important}
+.expense-members-card{padding:9px 13px 14px!important}
+.expense-optional-row{grid-template-columns:40px 1fr auto!important}
+.expense-optional-row small{color:#92aab7!important}
+.expense-members-card>.muted{color:#91aab7!important}
+.expense-composer .members{gap:9px!important}
+.expense-composer .members label{background:linear-gradient(110deg,#10363a,#102d35)!important;border:1px solid #168f84!important;border-radius:15px!important;color:#f0fbff!important;padding:11px 10px!important;min-height:53px!important;box-shadow:0 5px 14px #00b99a12!important}
+.expense-composer .members input[type=checkbox]{accent-color:#55e6c8!important;width:21px!important;height:21px!important;min-height:21px!important}
+.expense-composer #custom label{color:#d4e7ee!important}
+.expense-composer #custom input{background:#142b39!important;color:#fff!important;border:1px solid #315161!important}
+.expense-save{background:linear-gradient(100deg,#62efd0,#13cdb5)!important;color:#042a2b!important;border:1px solid #66f5d9!important;border-radius:18px!important;min-height:58px!important;font-size:18px!important;font-weight:850!important;box-shadow:0 9px 24px #00d7b544,inset 0 1px #ffffff80!important}
+.expense-time-note{color:#8da9b6!important}
+body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e)!important;color:#f4fbff!important}
+@media(max-width:380px){.expense-composer{padding:13px!important}.expense-option-row{grid-template-columns:32px 58px minmax(0,1fr)!important;gap:6px!important}.expense-dates input{max-width:105px}.expense-composer .members label{padding:9px 7px!important;font-size:12px!important}}
+
 </style>
 </head>
 <body><main>
@@ -233,20 +268,20 @@ body.fk-dark .expense-composer{background:#eaf5f2!important;color:#193b37!import
 </section>
 <section id="add" class="section">
 <div class="card expense-composer">
- <div class="expense-heading"><button type="button" id="expenseClose" class="expense-close" aria-label="Close">×</button><h3>Add expense</h3></div>
+ <div class="expense-heading"><button type="button" id="expenseClose" class="expense-close" aria-label="Close">×</button><h3>Add expense <span class="expense-receipt-emoji">🧾</span></h3></div>
  <div class="expense-amount-card">
-  <label for="amount">Amount</label>
+  <label for="amount">💰 TOTAL AMOUNT</label>
   <div class="expense-amount-input"><span>₹</span><input id="amount" type="number" min=".01" step=".01" placeholder="0" inputmode="decimal"></div>
-  <label for="title">What's this for?</label><input id="title" class="expense-title-input" placeholder="Expense title">
+  <label for="title">What's this for? ✏️</label><input id="title" class="expense-title-input" placeholder="Expense title">
  </div>
  <div class="expense-options-card">
-  <div class="expense-option-row"><span class="expense-option-icon">♙</span><label for="payer">Paid by</label><select id="payer"></select></div>
-  <div class="expense-option-row"><span class="expense-option-icon">◷</span><label for="mode">Split</label><select id="mode"><option value="equal">Equally</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div>
-  <div class="expense-option-row"><span class="expense-option-icon">▦</span><label for="date">When</label><div class="expense-dates"><input id="date" type="date" aria-label="Expense start date"><span>to</span><input id="endDate" type="date" aria-label="Expense end date"></div></div>
-  <div class="expense-option-row"><span class="expense-option-icon">◇</span><label for="category">Category</label><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select></div>
+  <div class="expense-option-row"><span class="expense-option-icon">👤</span><label for="payer">Paid by</label><select id="payer"></select></div>
+  <div class="expense-option-row"><span class="expense-option-icon">🥧</span><label for="mode">Split</label><select id="mode"><option value="equal">Equally</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div>
+  <div class="expense-option-row"><span class="expense-option-icon">📅</span><label for="date">When</label><div class="expense-dates"><input id="date" type="date" aria-label="Expense start date"><span>to</span><input id="endDate" type="date" aria-label="Expense end date"></div></div>
+  <div class="expense-option-row"><span class="expense-option-icon">🏷️</span><label for="category">Category</label><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select></div>
  </div>
  <div class="expense-options-card expense-members-card">
-  <div class="expense-option-row expense-optional-row"><span class="expense-option-icon">☑</span><span>Who shares this expense?</span><small>Choose members</small></div>
+  <div class="expense-option-row expense-optional-row"><span class="expense-option-icon">☑</span><span>👥 Who shares this expense?</span><small>Choose members</small></div>
   <p class="muted">Tap the tick boxes to include or remove members from the split.</p>
   <div id="checks" class="members"></div>
   <div id="custom" class="hidden"></div>
