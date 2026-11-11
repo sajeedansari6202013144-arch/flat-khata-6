@@ -47,7 +47,7 @@ async function connectRoomForSignedInUser(code){
  code=String(code||"").trim().toUpperCase();
  if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
  const user=auth.currentUser;
- if(!user||user.isAnonymous)throw Error("Sign in with your email and password first.");
+ if(!user)throw Error("Sign in first.");
  const roomSnap=await getDoc(doc(db,"rooms",code));
  if(!roomSnap.exists())throw Error("Room code not found.");
  const memberSnap=await getDoc(doc(db,"rooms",code,"members",user.uid));
@@ -67,8 +67,8 @@ $("fk6SignIn").onclick=async()=>{
  localStorage.setItem("fk6_room",code);
  $("fk6AuthMsg").textContent="Signing in and connecting your flat…";
  const user=auth.currentUser;
- if(user&&!user.isAnonymous)await connectRoomForSignedInUser(code);
- else await signInWithEmailAndPassword(auth,email,password);
+ if(user)await connectRoomForSignedInUser(code);
+ else {if(!email||!password)throw Error("Enter your email and password for the first login.");await signInWithEmailAndPassword(auth,email,password);}
  }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
 };
 
@@ -246,7 +246,7 @@ function renderProfiles(){
 const memberProfilesEl=$("memberProfiles");
 if(memberProfilesEl){memberProfilesEl.innerHTML=members.map(m=>{const p=profiles[m.uid]||{},upi=(p.upi||"").trim(),qr=upi?("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent("upi://pay?pa="+upi+"&cu=INR&tn=Flat%20Khata%206")):"";return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div style="min-width:0;flex:1"><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small><small style="overflow-wrap:anywhere">UPI: '+(upi?escapeHtml(upi):"Not added")+"</small>"+(qr?'<img src="'+qr+'" alt="'+escapeHtml(m.name)+' UPI QR code" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px" loading="lazy">' : "")+'</div></div>'}).join("");}
 const strip=$("homeMemberStrip");
-if(strip){const count=$("homeMemberCount");if(count)count.textContent="3/"+members.length;strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{},isMe=m.uid===uid;return '<button type="button" class="home-member member-open '+(isMe?"is-me":"")+'" data-member-uid="'+escapeHtml(m.uid)+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(isMe?'<small class="admin-tag">👑 ADMIN</small><small>You</small>':'')+'</button>'}).join("");}
+if(strip){const count=$("homeMemberCount");if(count)count.textContent="3/"+members.length;strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{},isMe=m.uid===uid;return '<button type="button" class="home-member member-open '+(isMe?"is-me":"")+'" data-member-uid="'+escapeHtml(m.uid)+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(admin&&isMe?'<small class="admin-tag">👑 ADMIN</small>':'')+(isMe?'<small>You</small>':'')+'</button>'}).join("");}
 const mine=profiles[uid]||{},img=$("profileAvatar");
 if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
 const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
@@ -424,7 +424,7 @@ if(donut)donut.style.background=paidTotal?"conic-gradient("+shareStops.join(",")
 if(donutTotal)donutTotal.textContent=M(paidTotal);
 if(legend)legend.innerHTML=N.map((name,i)=>{const pct=paidTotal?paidBy[i]/paidTotal*100:0;return '<div class="share-legend-item"><span class="share-legend-dot" style="background:'+shareColors[i%shareColors.length]+'"></span><span>'+escapeHtml(name)+'</span><strong>'+pct.toFixed(1)+'%</strong></div>'}).join("");
 
-const balanceRows=N.map((n,i)=>({n,i,value:b[i]})).sort((x,y)=>Math.abs(y.value)-Math.abs(x.value)).slice(0,3);$("balances").innerHTML=balanceRows.map(x=>`<div class="row"><span>${personLabel(x.n)} <small>${x.value>=0?"gets back":"owes"}</small></span><b class="${x.value>=0?"pos":"neg"}">${M(Math.abs(x.value))}</b></div>`).join("")||"<small>No balances yet</small>";
+const balanceRows=N.map((n,i)=>({n,i,value:b[i]}));$("balances").innerHTML=balanceRows.map(x=>`<div class="row"><span>${personLabel(x.n)} <small>${x.value>=0?"gets back":"owes"}</small></span><b class="${x.value>=0?"pos":"neg"}">${M(Math.abs(x.value))}</b></div>`).join("")||"<small>No balances yet</small>";
 let ss=settlements();
 let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 $("settle").innerHTML=ss.map(x=>{
@@ -708,6 +708,7 @@ const authStartupTimer=setTimeout(()=>{if(!authStateReceived&&$("status"))msg("F
 onAuthStateChanged(auth,async u=>{
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Continue to my flat";
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
@@ -722,14 +723,16 @@ return;
 localStorage.removeItem("fk6_logged_out");
 uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
+$("fk6AuthEmail").style.display="none";$("fk6AuthPassword").style.display="none";
+$("fk6SignIn").textContent="Connect room";
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
-$("fk6AuthTitle").textContent=u.isAnonymous?"Secure your account":"You are signed in";
-$("fk6AuthDescription").textContent=u.isAnonymous?"Secure this account once to keep the same flat identity across devices.":"You are signed in on this device. The app will open directly next time.";
-$("fk6AuthMsg").textContent=u.isAnonymous?"Secure your account to use the same identity on another device.":"Login saved. You do not need to sign in again unless you log out.";
+$("fk6AuthTitle").textContent=u.isAnonymous?"Device account ready":"You are signed in";
+$("fk6AuthDescription").textContent="Your account is saved on this device. Enter your room code only if you need to connect a room.";
+$("fk6AuthMsg").textContent="Login saved. Next time, your flat will open automatically.";
 let c=localStorage.getItem("fk6_room");
-if(c&&uid&&db&&!u.isAnonymous){
+if(c&&uid&&db){
  try{
   let r=await getDoc(doc(db,"rooms",c)),m=await getDoc(doc(db,"rooms",c,"members",uid));
   if(r.exists()&&m.exists()&&m.data()?.name){
