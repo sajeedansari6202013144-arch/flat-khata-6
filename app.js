@@ -687,7 +687,9 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)showPaymen
 window.addEventListener("focus",showPaymentReturn);
 window.addEventListener("pageshow",showPaymentReturn);
 
-await setPersistence(auth,browserLocalPersistence);
+try{await setPersistence(auth,browserLocalPersistence);}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);msg("Sign-in storage issue: "+(persistenceError?.message||"Please reload the page."));}
+window.addEventListener("error",event=>{console.error("Flat Khata startup error",event.error||event.message);if($("status"))msg("App error: "+(event.message||"Please reload the page."));});
+window.addEventListener("unhandledrejection",event=>{console.error("Flat Khata async error",event.reason);if($("status"))msg("Connection error: "+(event.reason?.message||"Please reload the page."));});
 
 onAuthStateChanged(auth,async u=>{
 if(!u){
