@@ -15,6 +15,46 @@ const N=["Sajeed","Asrar","Asfak","Abdus","Talib","Emteyaz"];
 const $=id=>document.getElementById(id);
 const M=n=>"₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
 
+/* Reliable delegated expense-save handler. Captures taps even if later UI setup fails. */
+document.addEventListener("click",async event=>{
+ const button=event.target.closest("#saveExpense");
+ if(!button)return;
+ event.preventDefault();
+ event.stopPropagation();
+ event.stopImmediatePropagation();
+ if(button.dataset.saving==="1")return;
+ const today=new Date().toISOString().slice(0,10);
+ const dateInput=document.getElementById("date"),endInput=document.getElementById("endDate");
+ if(dateInput&&!dateInput.value)dateInput.value=today;
+ if(endInput&&!endInput.value)endInput.value=dateInput?.value||today;
+ const amount=Number(document.getElementById("amount")?.value);
+ const title=document.getElementById("title")?.value.trim()||"";
+ const date=dateInput?.value||today,end=endInput?.value||date;
+ const selected=[...document.querySelectorAll(".part:checked")].map(x=>x.value);
+ const mode=document.getElementById("mode")?.value||"equal";
+ try{
+  if(!uid||!room||!db)throw Error("Your flat is not connected. Reopen the app and connect using your room code.");
+  if(!title||!Number.isFinite(amount)||amount<=0||!date||end<date||!selected.length)throw Error("Please enter an expense title, a valid amount, dates, and select at least one member.");
+  let shares=[];
+  if(mode==="custom"){
+   shares=[...document.querySelectorAll(".share")].filter(x=>selected.includes(x.dataset.name)).map(x=>({name:x.dataset.name,amount:Number(x.value)||0}));
+   if(Math.abs(shares.reduce((sum,x)=>sum+x.amount,0)-amount)>.01)throw Error("Custom shares must add up to the total amount.");
+  }else{
+   const weights=selected.map(name=>({name,days:mode==="perday"?stay(name,date,end):1}));
+   const total=weights.reduce((sum,x)=>sum+x.days,0);
+   if(!total)throw Error("No stay days found for the selected dates.");
+   let used=0;
+   weights.forEach((x,i)=>{const value=i===weights.length-1?Math.round((amount-used)*100)/100:Math.round(amount*x.days/total*100)/100;shares.push({name:x.name,amount:value});used+=value;});
+  }
+  button.dataset.saving="1";button.disabled=true;button.textContent="Saving…";
+  await addDoc(collection(db,"rooms",room,"expenses"),{title,amount,payer:document.getElementById("payer")?.value||members.find(m=>m.uid===uid)?.name||"",category:document.getElementById("category")?.value||"Other",date,endDate:end,splitMode:mode,shares,createdBy:uid,createdByName:members.find(m=>m.uid===uid)?.name||"Member",createdAt:serverTimestamp()});
+  document.getElementById("title").value="";document.getElementById("amount").value="";
+  alert("Expense added and synced.");
+ }catch(error){console.error("Expense save failed",error);alert("Expense not saved: "+(error?.message||"Please check your connection and try again."));}
+ finally{delete button.dataset.saving;button.disabled=false;button.textContent="Add expense";}
+},true);
+
+
 let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
 const firebaseApp=initializeApp(firebaseConfig);
 auth=getAuth(firebaseApp);
