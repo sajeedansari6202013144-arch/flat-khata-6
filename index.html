@@ -233,6 +233,81 @@ body.fk-dark .expense-composer{background:#eaf5f2!important;color:#193b37!import
 body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e)!important;color:#f4fbff!important}
 @media(max-width:380px){.expense-composer{padding:13px!important}.expense-option-row{grid-template-columns:32px 58px minmax(0,1fr)!important;gap:6px!important}.expense-dates input{max-width:105px}.expense-composer .members label{padding:9px 7px!important;font-size:12px!important}}
 
+
+/* Flat Khata premium dashboard home */
+#home{background:radial-gradient(ellipse at 50% 12%,#073d48 0%,#061d2a 38%,#04131f 100%);margin:0 -12px;padding:0 12px 105px;color:#f2fbff;min-height:calc(100vh - 70px)}
+#home .home-top{padding:14px 3px 8px}
+#home .home-brand h1{font-size:23px;font-weight:850;letter-spacing:-.7px}
+#home .home-brand h1:after{content:" 6";color:#21e2ca}
+#home .home-logo{width:54px;height:54px;border-radius:18px;background:linear-gradient(145deg,#0b5360,#00c9b4);box-shadow:0 0 22px #00d9c255}
+#home .home-bell{background:transparent;border:0;font-size:25px}
+#home .home-profile{position:relative;overflow:hidden;isolation:isolate;min-height:116px;padding:13px 16px;margin:8px 0 13px;border:1px solid #087e88;border-radius:24px;background:linear-gradient(110deg,#073542,#07515a 58%,#06303d);box-shadow:inset 0 1px #ffffff18,0 9px 24px #00121c77}
+#home .home-profile:after{content:"";position:absolute;z-index:-1;right:-28px;bottom:-74px;width:68%;height:145px;border-radius:50%;background:linear-gradient(135deg,#00d6bf66,#0b6c8c33);transform:rotate(-9deg)}
+#home .home-profile .home-avatar-wrap{flex:0 0 82px;height:82px}
+#home .home-profile img{width:82px;height:82px;border:3px solid #19e3c8;box-shadow:0 0 15px #00d8c455}
+#home .home-welcome{display:flex;flex-direction:column;align-items:flex-start;gap:3px;z-index:1}
+#home .home-welcome>small{font-size:12px;color:#b6dce5}
+#home .home-welcome strong{font-size:21px;color:#fff}
+#home .home-welcome .home-admin-pill{display:inline-flex;align-items:center;margin-top:3px;padding:4px 10px;border:1px solid #00d8bc;border-radius:99px;background:#007b7566;color:#8af6e3;font-size:11px;font-weight:750}
+#home .home-house-art{margin-left:auto;align-self:center;font-size:58px;filter:drop-shadow(0 6px 10px #00131d);z-index:1}
+#home .home-total-card{border:1px solid #087d89;border-radius:24px;padding:19px 16px;margin-bottom:13px;background:linear-gradient(115deg,#063044,#064657 58%,#007d79);box-shadow:inset 0 1px #ffffff20,0 10px 25px #00131d88}
+#home .home-total-card small{font-size:12px;color:#c1e2e9}
+#home .home-total-card strong{font-size:28px;font-weight:850}
+#home .home-total-card div:nth-of-type(2) strong{color:#25e2c5}
+#home .home-total-card i{background:#a7e8e555}
+#home .wave-decoration{background:#00e0c044;filter:blur(12px);width:210px;height:100px}
+#home .home-panel{background:linear-gradient(145deg,#092a39ee,#061c2aee);border:1px solid #086d79;border-radius:24px;padding:14px 12px;margin:12px 0;box-shadow:inset 0 1px #ffffff12,0 9px 24px #0005;color:#f1f9fc}
+#home .home-panel-head{margin-bottom:10px}
+#home .home-panel-head h2{color:#f4fbff;font-size:16px;font-weight:800}
+#home .member-count{color:#b8dce7}
+#home .home-member-strip{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:6px 1px 9px;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#home .home-member-strip::-webkit-scrollbar{display:none}
+#home .home-member{position:relative;flex:0 0 calc((100% - 20px)/3);min-width:0;min-height:124px;gap:5px;padding:9px 4px 8px;border:1px solid #087f83;border-radius:19px;background:linear-gradient(145deg,#06424a,#082a39);color:#efffff;scroll-snap-align:start;box-shadow:inset 0 1px #ffffff14,0 5px 12px #00151d66}
+#home .home-member img,#home .home-member .home-member-add{width:58px;height:58px;border:2px solid #9de8dc;border-radius:50%;object-fit:cover}
+#home .home-member.is-me{background:linear-gradient(145deg,#28e3bd,#078d81);border:1px solid #72ffe1;box-shadow:0 0 20px #00e6c877,inset 0 1px #ffffff88}
+#home .home-member.is-me img{border-color:#d6fff6}
+#home .home-member span{font-size:12px;font-weight:800;overflow-wrap:anywhere}
+#home .home-member small{font-size:9px;color:#bdeee5}
+#home .home-member .admin-tag{display:inline-block;padding:2px 6px;border-radius:99px;background:#075f54;color:#ffe88b;font-size:9px}
+#home .member-scroll-hint{display:flex;justify-content:space-between;padding:0 3px;color:#8bb8c3;font-size:10px}
+#home .home-insights-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:8px;align-items:stretch}
+#home .home-insights-grid .home-panel{min-width:0;margin:10px 0;padding:12px 9px}
+#home .home-insights-grid .home-panel-head{align-items:flex-start;flex-wrap:wrap;gap:5px}
+#home .home-insights-grid .home-panel-head h2{font-size:14px}
+#home .home-insights-grid .home-panel-head button{font-size:10px;padding:3px 6px;min-height:28px;background:#006d69;color:#b8fff0;border:1px solid #12cbb6;border-radius:99px}
+#home .balance-panel .row{display:flex;gap:4px;padding:9px 0;border-bottom:1px solid #28606a;color:#eaf8fb;font-size:11px}
+#home .balance-panel .row .person-label{gap:5px;font-size:10px;min-width:0}
+#home .balance-panel .row .person-label img{width:27px;height:27px;flex:0 0 27px}
+#home .balance-panel .row small{font-size:9px;color:#a5c6ce}
+#home .balance-panel .row> b{font-size:10px;white-space:nowrap;padding:4px 6px;border-radius:99px;background:#663847;color:#ff9db0}
+#home .balance-panel .row> b.pos{background:#075b51;color:#58f2d1}
+#home .view-all-balances{width:100%;min-height:30px;margin:5px 0 0;padding:4px;background:transparent;color:#31e4ce;font-size:11px}
+#home .payment-share-panel .home-panel-head{justify-content:center}
+#home .payment-share-content{display:flex;flex-direction:column;align-items:center;gap:10px}
+#home .payment-donut{width:min(100%,138px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#10dcae 0 100%);box-shadow:0 0 18px #00d7b433}
+#home .payment-donut-hole{width:62%;height:62%;border-radius:50%;background:#082432;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 2px 9px #0008}
+#home .payment-donut-hole small{font-size:10px;color:#9cc4cd}
+#home .payment-donut-hole strong{font-size:13px;color:#fff;white-space:nowrap}
+#home .payment-share-legend{width:100%;display:grid;gap:5px}
+#home .share-legend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:4px;font-size:9px;color:#e4f5f8}
+#home .share-legend-dot{width:8px;height:8px;border-radius:50%}
+#home .share-legend-item strong{font-size:9px;color:#f5ffff}
+#home .tabs{display:flex}
+#home .recentList,#recentList{display:none!important}
+@media(max-width:380px){
+ #home{padding-left:9px;padding-right:9px}
+ #home .home-house-art{font-size:43px}
+ #home .home-profile{gap:9px;padding:11px}
+ #home .home-profile .home-avatar-wrap,#home .home-profile img{width:68px;height:68px;flex-basis:68px}
+ #home .home-welcome strong{font-size:18px}
+ #home .home-total-card{gap:8px;padding:16px 12px}
+ #home .home-total-card strong{font-size:23px}
+ #home .home-insights-grid{grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:6px}
+ #home .home-insights-grid .home-panel{padding:10px 7px}
+ #home .home-insights-grid .home-panel-head h2{font-size:12px}
+ #home .payment-donut{width:112px}
+}
+
 </style>
 </head>
 <body><main>
@@ -246,7 +321,7 @@ body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e
  <div class="home-brand"><button class="home-logo" id="homeMenuTrigger" aria-label="Open app menu" type="button" onclick="document.getElementById(\'homeMenuBackdrop\').classList.remove(\'hidden\')">⌂</button><div><h1>Flat Khata</h1><p>Shared Flat Expenses</p></div></div>
  <button class="home-bell" id="notifyBtnHome" aria-label="Notifications">🔔</button>
 </div>
-<div class="home-profile"><div class="home-avatar-wrap"><img id="homeAvatar" src="" alt="Profile"></div><div data-go="profile"><strong id="homeMemberName">Flatmate</strong><small id="homeRole">Flat member</small></div><span data-go="profile">›</span></div><div class="home-menu-backdrop hidden" id="homeMenuBackdrop"><div class="home-menu-card"><div class="home-menu-head"><strong>Quick Menu</strong><button id="homeMenuClose" aria-label="Close menu" type="button" onclick="document.getElementById(\'homeMenuBackdrop\').classList.add(\'hidden\')">×</button></div><button data-menu-go="home">⌂ <span><strong>Home</strong><small>Dashboard overview</small></span></button><button data-menu-go="activity">◷ <span><strong>Room Activity</strong><small>Latest flat updates</small></span></button><button data-menu-go="settlement">⇄ <span><strong>Settlement</strong><small>Pending balances and payments</small></span></button><button data-menu-go="profile">👤 <span><strong>My Profile</strong><small>Your personal details</small></span></button><button data-menu-go="reports">▥ <span><strong>Reports</strong><small>Expense summaries</small></span></button><button data-menu-go="settings">⚙ <span><strong>Settings</strong><small>Appearance and preferences</small></span></button><button id="homeMenuLogout" class="menu-logout">↪ <span><strong>Log out</strong><small>Sign out from this device</small></span></button></div></div>
+<div class="home-profile"><div class="home-avatar-wrap"><img id="homeAvatar" src="" alt="Profile"></div><div class="home-welcome" data-go="profile"><small>Welcome back,</small><strong id="homeMemberName">Flatmate 👋</strong><span class="home-admin-pill" id="homeRole">👑 Flat Member</span></div><div class="home-house-art" aria-hidden="true">🏡</div></div><div class="home-menu-backdrop hidden" id="homeMenuBackdrop"><div class="home-menu-card"><div class="home-menu-head"><strong>Quick Menu</strong><button id="homeMenuClose" aria-label="Close menu" type="button" onclick="document.getElementById(\'homeMenuBackdrop\').classList.add(\'hidden\')">×</button></div><button data-menu-go="home">⌂ <span><strong>Home</strong><small>Dashboard overview</small></span></button><button data-menu-go="activity">◷ <span><strong>Room Activity</strong><small>Latest flat updates</small></span></button><button data-menu-go="settlement">⇄ <span><strong>Settlement</strong><small>Pending balances and payments</small></span></button><button data-menu-go="profile">👤 <span><strong>My Profile</strong><small>Your personal details</small></span></button><button data-menu-go="reports">▥ <span><strong>Reports</strong><small>Expense summaries</small></span></button><button data-menu-go="settings">⚙ <span><strong>Settings</strong><small>Appearance and preferences</small></span></button><button id="homeMenuLogout" class="menu-logout">↪ <span><strong>Log out</strong><small>Sign out from this device</small></span></button></div></div>
 <div id="memberCount" class="hidden">0 / 6</div>
 <div class="home-total-card">
  <div><small>Total Expenses</small><strong id="total">₹0</strong></div>
@@ -256,14 +331,20 @@ body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e
 </div>
 
 <div class="home-panel member-strip-panel">
- <div class="home-panel-head"><h2>Flat Members</h2><span id="homeMemberCount" class="member-count">0/6</span></div>
+ <div class="home-panel-head"><h2>👥 Flat Members</h2><span id="homeMemberCount" class="member-count">0/6</span></div>
  <div id="homeMemberStrip" class="home-member-strip"></div>
+ <div class="member-scroll-hint">Swipe to see all members <span>● ○</span></div>
 </div>
-<div id="recentList" class="hidden"></div>
-<div class="home-panel balance-panel">
- <div class="home-panel-head"><h2>Member Balance</h2><button data-go="home">⇄ Settle Up</button></div>
- <div id="balances"></div>
- 
+<div class="home-insights-grid">
+ <div class="home-panel balance-panel">
+  <div class="home-panel-head"><h2>📊 Member Balance</h2><button data-go="settlement">🤝 Settle Up</button></div>
+  <div id="balances"></div>
+  <button class="view-all-balances" data-go="settlement">View All (6)　→</button>
+ </div>
+ <div class="home-panel payment-share-panel">
+  <div class="home-panel-head"><h2>💳 Payment Share</h2></div>
+  <div class="payment-share-content"><div class="payment-donut-wrap"><div id="paymentDonut" class="payment-donut"><div class="payment-donut-hole"><small>Total</small><strong id="paymentDonutTotal">₹0</strong></div></div></div><div id="paymentShareLegend" class="payment-share-legend"></div></div>
+ </div>
 </div>
 </section>
 <section id="add" class="section">
