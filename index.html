@@ -123,6 +123,42 @@ body.fk-dark .home-menu-card>button.menu-logout{
   border:0!important;
   box-shadow:none!important;
 }
+
+/* Premium Add Expense composer */
+.expense-composer{background:#eaf5f2!important;color:#193b37!important;border:1px solid #d3e7e1!important;border-radius:26px!important;padding:18px!important;box-shadow:0 14px 35px #001b1520!important}
+.expense-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.expense-heading h3{margin:0;color:#193b37!important;font-size:21px}
+.expense-close{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border-radius:50%!important;background:#fff!important;color:#173c36!important;border:1px solid #dcebe6!important;font-size:25px!important;font-weight:400!important}
+.expense-amount-card{background:#f8fcfa;border:1px solid #d8e9e3;border-radius:20px;padding:16px;margin:8px 0 14px}
+.expense-amount-card>label{display:block;color:#63817a;font-size:12px;font-weight:700;margin:0 0 5px}
+.expense-amount-input{display:flex;align-items:center;gap:10px;border-bottom:2px solid #258d7d;padding:2px 0 8px;margin-bottom:12px}
+.expense-amount-input>span{font-size:30px;color:#258d7d;font-weight:700}
+.expense-amount-input input{background:transparent!important;border:0!important;border-radius:0!important;color:#19483f!important;font-size:42px!important;font-weight:700!important;text-align:center;padding:4px!important;margin:0!important;min-height:64px!important;box-shadow:none!important}
+.expense-amount-input input::placeholder{color:#a9c1ba}
+.expense-title-input{background:#f0f7f4!important;border:0!important;border-radius:12px!important;color:#193b37!important;margin:0!important}
+.expense-options-card{background:#f8fcfa;border:1px solid #d8e9e3;border-radius:20px;padding:5px 14px;margin:14px 0}
+.expense-option-row{display:grid;grid-template-columns:38px minmax(62px,.8fr) minmax(0,1.3fr);align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #e1eee9;min-height:62px}
+.expense-option-row:last-child{border-bottom:0}
+.expense-option-icon{width:34px;height:34px;border-radius:10px;background:#e3f2ed;color:#258b7b;display:grid;place-items:center;font-size:19px}
+.expense-option-row>label,.expense-option-row>span:not(.expense-option-icon){color:#45665f;font-weight:600;font-size:13px}
+.expense-option-row select,.expense-dates input{min-width:0;width:100%;margin:0!important;padding:8px 5px!important;min-height:40px!important;background:transparent!important;border:0!important;color:#193b37!important;text-align:right;font-weight:650}
+.expense-dates{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+.expense-dates input{font-size:12px!important;max-width:125px}
+.expense-dates span{color:#809891;font-size:11px}
+.expense-members-card{padding:8px 13px 14px}
+.expense-optional-row{grid-template-columns:38px 1fr auto}
+.expense-optional-row small{color:#8aa49c;font-size:11px}
+.expense-members-card>.muted{font-size:12px;color:#7c9690!important;margin:3px 0 10px}
+.expense-composer .members{gap:8px}
+.expense-composer .members label{display:flex;align-items:center;gap:9px;padding:12px 10px;background:#e4f4ef!important;border:1.5px solid #b9ddd2;border-radius:14px;color:#155d53!important;font-weight:700;min-height:54px}
+.expense-composer .members input[type=checkbox]{accent-color:#168f80;width:21px!important;height:21px!important;min-height:21px!important;margin:0!important;flex:0 0 21px}
+.expense-composer #custom label{color:#45665f!important}
+.expense-composer #custom input{background:#fff!important;color:#193b37!important;border:1px solid #cfe3dc!important}
+.expense-save{background:#168f80!important;color:#fff!important;border-radius:15px!important;min-height:58px!important;font-size:17px!important;margin:8px 0 0!important;box-shadow:none!important}
+.expense-time-note{text-align:center;color:#78938b!important;font-size:11px;margin:8px 0 0}
+body.fk-dark .expense-composer{background:#eaf5f2!important;color:#193b37!important}
+@media(max-width:380px){.expense-composer{padding:13px!important}.expense-option-row{grid-template-columns:32px 58px minmax(0,1fr);gap:6px}.expense-dates input{max-width:105px}.expense-composer .members label{padding:10px 7px;font-size:12px}}
+
 </style>
 </head>
 <body><main>
@@ -156,7 +192,29 @@ body.fk-dark .home-menu-card>button.menu-logout{
  
 </div>
 </section>
-<section id="add" class="section"><div class="card"><h3>Add expense</h3><input id="title" placeholder="Expense title"><div class="form-grid"><input id="amount" type="number" min=".01" step=".01" placeholder="Amount ₹"><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select><select id="payer"></select><input id="date" type="date"><input id="endDate" type="date"><select id="mode"><option value="equal">Equal split</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div><p class="muted">Who should share this expense?</p><div id="checks" class="members"></div><div id="custom" class="hidden"></div><button id="saveExpense">＋ Add expense</button></div></section>
+<section id="add" class="section">
+<div class="card expense-composer">
+ <div class="expense-heading"><button type="button" class="expense-close" onclick="showTab('home')" aria-label="Close">×</button><h3>Add expense</h3></div>
+ <div class="expense-amount-card">
+  <label for="amount">Amount</label>
+  <div class="expense-amount-input"><span>₹</span><input id="amount" type="number" min=".01" step=".01" placeholder="0" inputmode="decimal"></div>
+  <label for="title">What's this for?</label><input id="title" class="expense-title-input" placeholder="Expense title">
+ </div>
+ <div class="expense-options-card">
+  <div class="expense-option-row"><span class="expense-option-icon">♙</span><label for="payer">Paid by</label><select id="payer"></select></div>
+  <div class="expense-option-row"><span class="expense-option-icon">◷</span><label for="mode">Split</label><select id="mode"><option value="equal">Equally</option><option value="perday">Stay-day split</option><option value="custom">Custom split</option></select></div>
+  <div class="expense-option-row"><span class="expense-option-icon">▦</span><label for="date">When</label><div class="expense-dates"><input id="date" type="date" aria-label="Expense start date"><span>to</span><input id="endDate" type="date" aria-label="Expense end date"></div></div>
+  <div class="expense-option-row"><span class="expense-option-icon">◇</span><label for="category">Category</label><select id="category"><option>Groceries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Wi-Fi</option><option>Gas cylinder</option><option>Food</option><option>Other</option></select></div>
+ </div>
+ <div class="expense-options-card expense-members-card">
+  <div class="expense-option-row expense-optional-row"><span class="expense-option-icon">☑</span><span>Who shares this expense?</span><small>Choose members</small></div>
+  <p class="muted">Tap the tick boxes to include or remove members from the split.</p>
+  <div id="checks" class="members"></div>
+  <div id="custom" class="hidden"></div>
+ </div>
+ <button id="saveExpense" class="expense-save">Add expense</button>
+ <p class="expense-time-note">Time will be recorded automatically when you save.</p>
+</div></section>
 <section id="away" class="section"><div class="card"><h3>Away mode</h3><select id="awayName"></select><div class="form-grid"><input id="awayStart" type="date"><input id="awayEnd" type="date"></div><input id="reason" placeholder="Reason (optional)"><button id="saveAway">Save away days</button></div><div class="card"><h3>Away history</h3><div id="awayList"></div></div></section>
 <section id="history" class="section"><div class="card"><h3>Expense history</h3><div id="historyList"></div></div></section>
 <section id="profile" class="section"><div class="card"><h3>My Profile</h3><div class="profile-photo-wrap"><img id="profileAvatar" alt="Your profile photo" src="" class="profile-avatar"><label class="photo-pick">📷 Change photo<input id="profilePhotoInput" type="file" accept="image/*" hidden></label></div><label class="muted">Name</label><input id="profileName" readonly><label class="muted">Email</label><input id="profileEmail" type="email" placeholder="Email address (optional)"><label class="muted">Phone</label><input id="profilePhone" type="tel" inputmode="tel" placeholder="Phone number (optional)"><label class="muted">UPI ID, visible to all flatmates</label><input id="profileUpi" type="text" inputmode="email" placeholder="yourname@okaxis"><p class="muted">Your UPI QR code will appear here and in your flatmates’ profiles.</p><img id="profileUpiQr" alt="Your UPI QR code" style="display:none;width:190px;height:190px;object-fit:contain;background:#fff;border-radius:12px;padding:8px;margin:8px auto"><div class="profile-stats-grid"><div class="metric"><span>Member since</span><strong id="myMemberSince">Date unavailable</strong></div><div class="metric"><span>Total expenses contributed</span><strong id="myContribution">₹0</strong></div><div class="metric"><span>Settlements completed</span><strong id="mySettlements">0</strong></div></div><div class="profile-completion"><div class="profile-completion-head"><strong>Profile completion</strong><span id="myProfileCompletion">0/5 details · 0% complete</span></div><div class="profile-progress"><span id="myProfileCompletionBar"></span></div><small class="muted">Add a photo, email, phone number and UPI ID to complete your profile.</small></div><button id="saveProfile">Save profile</button><button id="logoutMain" class="danger hidden">Log out from this device</button><p class="muted">Your photo, email and phone will be visible to members of this flat.</p></div></section>
