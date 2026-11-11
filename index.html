@@ -322,6 +322,20 @@ body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e
 #home .balance-panel .row .person-label{font-size:10px}
 #home .balance-panel .row> b{font-size:10px;padding:3px 5px}
 #home .payment-share-content{flex-direction:column;align-items:center}
+
+/* Bottom navigation matched to supplied reference */
+.tabs{height:88px;min-height:88px;align-items:center;gap:0;padding:7px 5px calc(7px + env(safe-area-inset-bottom));background:rgba(3,20,31,.97);border-top:1px solid #176477;border-radius:22px 22px 0 0;box-shadow:0 -8px 28px #0005;overflow:visible}
+.tabs button{height:70px;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 2px;margin:0;border:0;border-radius:18px;background:transparent;color:#e6edf3;font-size:12px;font-weight:500;line-height:1.15}
+.tabs button .nav-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;font-size:0;line-height:1}
+.tabs button .nav-icon svg{display:block;width:100%;height:100%;overflow:visible}
+.tabs button span{display:block;white-space:nowrap}
+.tabs button.active{background:linear-gradient(145deg,#08cdbb,#087c79);color:#effffc;box-shadow:0 0 14px #00e2d188,inset 0 0 0 1px #49f4e4;border-radius:18px}
+.tabs button.nav-add{position:relative;top:-16px;height:88px;min-height:88px;flex:1.35 1 25%;overflow:visible}
+.tabs button.nav-add .nav-icon{width:88px;height:88px;border-radius:50%;background:linear-gradient(145deg,#08e0c8,#087e78);box-shadow:0 0 20px #00e7d599,inset 0 0 0 2px #55f8e7}
+.tabs button.nav-add .nav-icon svg{width:55%;height:55%;filter:drop-shadow(0 1px 2px #075b58)}
+.tabs button.nav-add span{margin-top:-2px;font-size:12px}
+.tabs button:nth-child(n+6){display:none}
+@media(max-width:380px){.tabs{height:82px;min-height:82px}.tabs button{font-size:10px}.tabs button.nav-add .nav-icon{width:76px;height:76px}}
 </style>
 </head>
 <body><main>
@@ -329,7 +343,13 @@ body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e
 <div id="status">Starting secure sign-in...</div>
 <section id="join" class="card"><h3>Welcome to Flat Khata 6</h3><p class="muted">First login: use your email and password with your room code. After that, your saved account will reopen automatically. If you need to connect another room, enter its room code.</p><input id="code" maxlength="5" autocapitalize="characters" placeholder="5-character room code" autocomplete="off"></section>
 <div id="app" class="hidden"><div id="roomLabel"></div>
-<nav class="tabs"><button data-tab="home" class="active"><b>⌂</b>Home</button><button data-tab="history"><b>◷</b>Recent</button><button data-tab="add"><b>＋</b>Add Expense</button><button data-tab="profile"><b>👤</b>Profile</button><button data-tab="personal"><b>🔒</b>Personal</button><button data-tab="reports"><b>▥</b>Reports</button><button data-tab="groups"><b>◫</b>Groups</button><button data-tab="wallet"><b>▣</b>Wallet</button><button data-tab="recurring"><b>↻</b>Recurring</button><button data-tab="settings"><b>⚙</b>Room</button></nav>
+<nav class="tabs" aria-label="Main navigation">
+<button data-tab="home" class="active"><b class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.1a1.1 1.1 0 0 1-1.1 1.1h-5.2v-6.2H9.3V21H4.1A1.1 1.1 0 0 1 3 19.9z" fill="currentColor" stroke="currentColor" stroke-linejoin="round" stroke-width="1.2"/></svg></b><span>Home</span></button>
+<button data-tab="history"><b class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 6.5v5.8l3.8 2.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></b><span>Recent</span></button>
+<button data-tab="add" class="nav-add"><b class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></b><span>Add Expense</span></button>
+<button data-tab="profile"><b class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 21c.7-4.2 3.2-6.3 7.5-6.3s6.8 2.1 7.5 6.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></b><span>Profile</span></button>
+<button data-tab="personal"><b class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></b><span>Personal</span></button>
+<button data-tab="reports"><b>▥</b>Reports</button><button data-tab="groups"><b>◫</b>Groups</button><button data-tab="wallet"><b>▣</b>Wallet</button><button data-tab="recurring"><b>↻</b>Recurring</button><button data-tab="settings"><b>⚙</b>Room</button></nav>
 <section id="home" class="section active">
 <div class="home-top">
  <div class="home-brand"><button class="home-logo" id="homeMenuTrigger" aria-label="Open app menu" type="button" onclick="document.getElementById(\'homeMenuBackdrop\').classList.remove(\'hidden\')">⌂</button><div><h1>Flat Khata</h1><p>Shared Flat Expenses</p></div></div>
@@ -353,7 +373,7 @@ body.fk-dark .expense-composer{background:linear-gradient(155deg,#0b1d29,#07131e
  <div class="home-panel balance-panel">
   <div class="home-panel-head"><h2>📊 Member Balance</h2><button data-go="settlement">🤝 Settle Up</button></div>
   <div id="balances"></div>
-  <button class="view-all-balances" data-go="settlement">View All (6)　→</button>
+  
  </div>
  <div class="home-panel payment-share-panel">
   <div class="home-panel-head"><h2>💳 Payment Share</h2></div>
