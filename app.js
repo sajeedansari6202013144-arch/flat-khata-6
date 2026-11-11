@@ -246,13 +246,13 @@ function renderProfiles(){
 const memberProfilesEl=$("memberProfiles");
 if(memberProfilesEl){memberProfilesEl.innerHTML=members.map(m=>{const p=profiles[m.uid]||{},upi=(p.upi||"").trim(),qr=upi?("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent("upi://pay?pa="+upi+"&cu=INR&tn=Flat%20Khata%206")):"";return '<div class="profile-item"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><div style="min-width:0;flex:1"><strong>'+escapeHtml(m.name)+'</strong><small>'+(p.email?escapeHtml(p.email):"Email not added")+'</small><small>'+(p.phone?escapeHtml(p.phone):"Phone not added")+'</small><small style="overflow-wrap:anywhere">UPI: '+(upi?escapeHtml(upi):"Not added")+"</small>"+(qr?'<img src="'+qr+'" alt="'+escapeHtml(m.name)+' UPI QR code" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px" loading="lazy">' : "")+'</div></div>'}).join("");}
 const strip=$("homeMemberStrip");
-if(strip){const count=$("homeMemberCount");if(count)count.textContent=members.length+"/6";strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{};return '<button type="button" class="home-member member-open" data-member-uid="'+escapeHtml(m.uid)+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+(m.uid===uid&&admin?' <small class="admin-tag">ADMIN</small>':'')+'</span>'+(m.uid===uid?'<small>You</small>':'')+'</button>'}).join("")+(members.length<6?'<div class="home-member"><span class="home-member-add">+</span><span>Add</span></div>':"");}
+if(strip){const count=$("homeMemberCount");if(count)count.textContent="3/"+members.length;strip.innerHTML=members.map(m=>{const p=profiles[m.uid]||{},isMe=m.uid===uid;return '<button type="button" class="home-member member-open '+(isMe?"is-me":"")+'" data-member-uid="'+escapeHtml(m.uid)+'"><img src="'+(p.photo||avatarFallback(m.name))+'" alt=""><span>'+escapeHtml(m.name)+'</span>'+(isMe?'<small class="admin-tag">👑 ADMIN</small><small>You</small>':'')+'</button>'}).join("");}
 const mine=profiles[uid]||{},img=$("profileAvatar");
 if(img)img.src=mine.photo||avatarFallback(members.find(m=>m.uid===uid)?.name);
 const homeImg=$("homeAvatar"),myName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"Flatmate";
 if(homeImg)homeImg.src=mine.photo||avatarFallback(myName);
-if($("homeMemberName"))$("homeMemberName").textContent=myName;
-if($("homeRole"))$("homeRole").textContent=admin?"Flat Admin":"Flat Member";
+if($("homeMemberName"))$("homeMemberName").textContent=myName+" 👋";
+if($("homeRole"))$("homeRole").textContent=admin?"👑 Flat Admin":"🏠 Flat Member";
 if($("homeRoomCode"))$("homeRoomCode").textContent=room||"-----";
 if($("homeRoom"))$("homeRoom").textContent=room?"Room "+room+" · "+(admin?"Permanent admin":"Flat member"):"Shared living made simple";
 const selfMember=members.find(m=>m.uid===uid);
@@ -413,7 +413,18 @@ let myIndex=(Array.isArray(N)?N:[]).indexOf(members.find(m=>m.uid===uid)?.name||
 let myBalance=myIndex>=0?(b[myIndex]||0):0;
 $("yourBalance").textContent=(myBalance>0?"+":myBalance<0?"−":"")+M(Math.abs(myBalance));
 $("yourBalanceLabel").textContent=myBalance>0?"You are owed":myBalance<0?"You owe":"All settled";
-$("balances").innerHTML=N.map((n,i)=>`<div class="row"><span>${personLabel(n)} <small>${b[i]>=0?"gets back":"owes"}</small></span><b class="${b[i]>=0?"pos":"neg"}">${M(Math.abs(b[i]))}</b></div>`).join("");
+
+const shareColors=["#10dcae","#38bdf8","#f59e0b","#a78bfa","#94a3b8","#fb7185"];
+const paidBy=N.map(name=>expenses.filter(e=>e.payer===name).reduce((sum,e)=>sum+Number(e.amount||0),0));
+const paidTotal=paidBy.reduce((sum,v)=>sum+v,0);
+let shareCursor=0;
+const shareStops=paidBy.map((value,i)=>{const start=paidTotal?shareCursor/paidTotal*100:0;shareCursor+=value;const end=paidTotal?shareCursor/paidTotal*100:0;return shareColors[i%shareColors.length]+" "+start+"% "+end+"%";});
+const donut=$("paymentDonut"),donutTotal=$("paymentDonutTotal"),legend=$("paymentShareLegend");
+if(donut)donut.style.background=paidTotal?"conic-gradient("+shareStops.join(",")+")":"conic-gradient(#284654 0 100%)";
+if(donutTotal)donutTotal.textContent=M(paidTotal);
+if(legend)legend.innerHTML=N.map((name,i)=>{const pct=paidTotal?paidBy[i]/paidTotal*100:0;return '<div class="share-legend-item"><span class="share-legend-dot" style="background:'+shareColors[i%shareColors.length]+'"></span><span>'+escapeHtml(name)+'</span><strong>'+pct.toFixed(1)+'%</strong></div>'}).join("");
+
+const balanceRows=N.map((n,i)=>({n,i,value:b[i]})).sort((x,y)=>Math.abs(y.value)-Math.abs(x.value)).slice(0,3);$("balances").innerHTML=balanceRows.map(x=>`<div class="row"><span>${personLabel(x.n)} <small>${x.value>=0?"gets back":"owes"}</small></span><b class="${x.value>=0?"pos":"neg"}">${M(Math.abs(x.value))}</b></div>`).join("")||"<small>No balances yet</small>";
 let ss=settlements();
 let me=localStorage.getItem("fk6_name")||members.find(m=>m.uid===uid)?.name;
 $("settle").innerHTML=ss.map(x=>{
