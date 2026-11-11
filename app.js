@@ -396,6 +396,7 @@ languageObserver.observe(document.body,{subtree:true,childList:true,characterDat
 $("saveAppearance").onclick=()=>{localStorage.setItem("fk6_theme",$("themePreference").value);localStorage.setItem("fk6_font",$("fontPreference").value);applyAppearance();alert("Appearance preferences saved.");};
 $("saveNotificationPrefs").onclick=()=>{localStorage.setItem("fk6_activity_notifications",$("activityNotifications").checked?"1":"0");localStorage.setItem("fk6_payment_notifications",$("paymentNotifications").checked?"1":"0");alert("Notification preferences saved.");};
 $("activityNotifications").checked=localStorage.getItem("fk6_activity_notifications")!=="0";$("paymentNotifications").checked=localStorage.getItem("fk6_payment_notifications")!=="0";
+$("expenseClose")?.addEventListener("click",()=>showTab("home"));
 function showTab(id){if(id==="settlement"){render();}if(id==="profile")loadMyProfile().catch(e=>alert("Profile could not load: "+e.message));if(id==="groups")loadGroupData().catch(e=>alert(e.message));if(id==="wallet")loadWallet().catch(e=>alert(e.message));if(id==="recurring")loadRecurring().catch(e=>alert(e.message));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"})}
 
 function expenseAddedTime(e){
