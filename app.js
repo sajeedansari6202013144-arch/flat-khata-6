@@ -55,11 +55,11 @@ document.addEventListener("click",async event=>{
 },true);
 
 
-let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={};
+let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],payments=[],budget=0,upis={},profiles={},persistenceTask=Promise.resolve();
 const firebaseApp=initializeApp(firebaseConfig);
 auth=getAuth(firebaseApp);
 db=getFirestore(firebaseApp);
-const persistenceTask=setPersistence(auth,indexedDBLocalPersistence).catch(async indexedError=>{console.warn("IndexedDB auth persistence unavailable, trying browser storage.",indexedError);try{return await setPersistence(auth,browserLocalPersistence)}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in could not be saved on this device. Allow app storage and try again.");throw persistenceError;}});
+persistenceTask=setPersistence(auth,indexedDBLocalPersistence).catch(async indexedError=>{console.warn("IndexedDB auth persistence unavailable, trying browser storage.",indexedError);try{return await setPersistence(auth,browserLocalPersistence)}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in could not be saved on this device. Allow app storage and try again.");throw persistenceError;}});
 
 
 
