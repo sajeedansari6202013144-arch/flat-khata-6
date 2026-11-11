@@ -320,6 +320,7 @@ function openMemberProfile(memberUid){
 const m=members.find(x=>x.uid===memberUid);if(!m)return;
 const p=profiles[memberUid]||{},stats=memberProfileStats(m),completion=profileCompletion(p,m);
 $("viewMemberAvatar").src=p.photo||avatarFallback(m.name);
+const photoPick=$("viewMemberPhotoPick");if(photoPick)photoPick.classList.toggle("hidden",memberUid!==uid);
 $("viewMemberName").textContent=m.name;
 $("viewMemberRole").textContent=memberUid===uid?(admin?"ADMIN · You":"You · Flat Member"):(m.role==="admin"?"Flat Admin":"Flat Member");
 $("viewMemberEmail").textContent=p.email||"Email not added";
@@ -361,6 +362,26 @@ try{
 const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
 const img=new Image();img.onload=async()=>{const canvas=document.createElement("canvas"),max=360,scale=Math.min(1,max/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);const photo=canvas.toDataURL("image/jpeg",.72);profiles[uid]={...(profiles[uid]||{}),photo};$("profileAvatar").src=photo;};img.onerror=()=>alert("Could not read this image.");img.src=data;
 }catch(err){alert("Photo processing failed: "+err.message)}
+};
+$("viewMemberPhotoInput").onchange=async e=>{
+const file=e.target.files?.[0];if(!file)return;
+if(!file.type.startsWith("image/")){alert("Choose an image.");e.target.value="";return}
+if(file.size>8*1024*1024){alert("Choose a photo smaller than 8 MB.");e.target.value="";return}
+try{
+const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+const photo=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const canvas=document.createElement("canvas"),max=360,scale=Math.min(1,max/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL("image/jpeg",.72))};img.onerror=()=>reject(new Error("Could not read this image."));img.src=data});
+if(photo.length>850000)throw Error("Photo is too large after processing. Choose another image.");
+const me=members.find(m=>m.uid===uid);if(!me||!room)throw Error("Your flat profile could not be found.");
+const current=profiles[uid]||{};
+const saved={...current,uid,name:me.name,photo,updatedAt:serverTimestamp()};
+await setDoc(doc(db,"rooms",room,"profiles",uid),saved,{merge:true});
+profiles[uid]=saved;
+$("viewMemberAvatar").src=photo;
+if($("profileAvatar"))$("profileAvatar").src=photo;
+renderProfiles();
+alert("Your photo is saved and visible to all flatmates.");
+}catch(err){alert("Could not save photo: "+err.message)}
+e.target.value="";
 };
 $("saveProfile").onclick=async()=>{
 try{
