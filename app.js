@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential,signOut,setPersistence,browserLocalPersistence,indexedDBLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -763,7 +763,7 @@ window.addEventListener("pageshow",showPaymentReturn);
 
 window.addEventListener("error",event=>{console.error("Flat Khata startup error",event.error||event.message);if($("status"))msg("App error: "+(event.message||"Please reload the page."));});
 window.addEventListener("unhandledrejection",event=>{console.error("Flat Khata async error",event.reason);if($("status"))msg("Connection error: "+(event.reason?.message||"Please reload the page."));});
-const persistenceTask=setPersistence(auth,browserLocalPersistence).catch(persistenceError=>{console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in storage issue: "+(persistenceError?.message||"Please reload the page."));});
+const persistenceTask=setPersistence(auth,indexedDBLocalPersistence).catch(async indexedError=>{console.warn("IndexedDB auth persistence unavailable, trying browser storage.",indexedError);try{return await setPersistence(auth,browserLocalPersistence)}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in could not be saved on this device. Allow app storage and try again.");throw persistenceError;}});
 let authStateReceived=false;
 const authStartupTimer=setTimeout(()=>{if(!authStateReceived&&$("status"))msg("Firebase sign-in is taking too long. Check internet access and allow site data in Chrome.");},10000);
 
