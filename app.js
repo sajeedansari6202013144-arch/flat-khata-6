@@ -360,7 +360,7 @@ function translateLanguageNode(node,lang){
   else if(current!==rec.last){rec.source=current;}
   let value=rec.source;
   for(const [en,tr] of Object.entries(dict)){if(value.trim()===en){const lead=value.match(/^\s*/)?.[0]||"",tail=value.match(/\s*$/)?.[0]||"";value=lead+tr+tail;break;}}
-  node.nodeValue=value;rec.last=value;
+  if(node.nodeValue!==value)node.nodeValue=value;rec.last=value;
  }else if(node.nodeType===Node.ELEMENT_NODE){
   if(["SCRIPT","STYLE"].includes(node.tagName))return;
   for(const attr of ["placeholder","title","aria-label"]){
