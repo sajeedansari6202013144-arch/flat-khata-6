@@ -1,0 +1,190 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function member(roomId) {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+    }
+
+    function admin(roomId) {
+      return signedIn() &&
+        get(/databases/$(database)/documents/rooms/$(roomId)).data.adminUid == request.auth.uid;
+    }
+
+    function myName(roomId) {
+      return get(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid)).data.name;
+    }
+
+    function allowedMemberName(name) {
+      return name in ['Sajeed', 'Asrar', 'Asfak', 'Abdus', 'Talib', 'Emteyaz'];
+    }
+
+    match /rooms/{roomId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.adminUid == request.auth.uid
+        && request.resource.data.name == 'Flat Khata 6';
+      allow update, delete: if admin(roomId);
+
+      match /joinRequests/{uid} {
+        allow create: if signedIn()
+          && uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && allowedMemberName(request.resource.data.name)
+          && request.resource.data.email is string
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+        allow get: if signedIn() && (uid == request.auth.uid || admin(roomId));
+        allow list: if admin(roomId);
+        allow update: if false;
+        allow delete: if admin(roomId);
+      }
+
+      match /members/{uid} {
+        allow get, list: if signedIn();
+
+        allow create: if (
+          signedIn()
+          && uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && allowedMemberName(request.resource.data.name)
+          && (
+            request.resource.data.role == 'member' ||
+            (request.resource.data.role == 'admin' && admin(roomId))
+          )
+        ) || (
+          admin(roomId)
+          && request.resource.data.uid == uid
+          && allowedMemberName(request.resource.data.name)
+          && request.resource.data.role == 'member'
+          && exists(/databases/$(database)/documents/rooms/$(roomId)/joinRequests/$(uid))
+          && get(/databases/$(database)/documents/rooms/$(roomId)/joinRequests/$(uid)).data.uid == uid
+          && get(/databases/$(database)/documents/rooms/$(roomId)/joinRequests/$(uid)).data.name == request.resource.data.name
+          && get(/databases/$(database)/documents/rooms/$(roomId)/joinRequests/$(uid)).data.status == 'pending'
+        );
+
+        allow update, delete: if admin(roomId);
+      }
+
+      match /expenses/{id} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+        allow update, delete: if admin(roomId);
+      }
+
+      match /absences/{id} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && allowedMemberName(request.resource.data.name);
+        allow update, delete: if admin(roomId);
+      }
+
+      match /fixedBills/{id} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if admin(roomId);
+      }
+
+      match /settlements/{id} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.from == myName(roomId)
+          && request.resource.data.to != request.resource.data.from
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.status == 'pending'
+          && request.resource.data.recipientUid is string
+          && get(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.resource.data.recipientUid)).data.name == request.resource.data.to;
+        allow update: if member(roomId)
+          && resource.data.status == 'pending'
+          && request.resource.data.from == resource.data.from
+          && request.resource.data.to == resource.data.to
+          && request.resource.data.amount == resource.data.amount
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.recipientUid == resource.data.recipientUid
+          && (
+            (resource.data.recipientUid == request.auth.uid
+              && request.resource.data.status == 'confirmed'
+              && request.resource.data.confirmedBy == request.auth.uid)
+            ||
+            (resource.data.createdBy == request.auth.uid
+              && request.resource.data.status == 'cancelled'
+              && request.resource.data.cancelledBy == request.auth.uid)
+          );
+        allow delete: if admin(roomId);
+      }
+
+      match /settings/{settingId} {
+        allow read: if member(roomId);
+        allow create, update: if member(roomId)
+          && request.resource.data.updatedBy == request.auth.uid;
+        allow delete: if admin(roomId);
+      }
+
+      match /profiles/{profileId} {
+        allow read: if member(roomId);
+        allow create, update: if member(roomId)
+          && request.auth.uid == profileId
+          && request.resource.data.uid == request.auth.uid;
+        allow delete: if admin(roomId);
+      }
+
+      match /pushTokens/{tokenId} {
+        allow read: if member(roomId);
+        allow create, update: if member(roomId)
+          && request.auth.uid == tokenId
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.token is string;
+        allow delete: if member(roomId) && request.auth.uid == tokenId;
+      }
+
+      match /groups/{groupId} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.name is string;
+        allow update, delete: if admin(roomId)
+          || resource.data.createdBy == request.auth.uid;
+      }
+
+      match /groupExpenses/{expenseId} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+        allow update, delete: if admin(roomId)
+          || resource.data.createdBy == request.auth.uid;
+      }
+
+      match /recurringBills/{billId} {
+        allow read: if member(roomId);
+        allow create: if member(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.day is int
+          && request.resource.data.day >= 1
+          && request.resource.data.day <= 28;
+        allow update, delete: if admin(roomId)
+          || resource.data.createdBy == request.auth.uid;
+      }
+    }
+
+    match /users/{userId}/{document=**} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+  }
+}
