@@ -851,6 +851,13 @@ $("app").classList.add("hidden");$("join").classList.remove("hidden");mountAuthC
 if(!u.isAnonymous)$("fk6AuthMsg").textContent="Enter your room code and tap Continue. Your login stays saved on this device.";
 });
 
+// Ensure a fresh device receives an anonymous Firebase session so the new-member controls become available.
+persistenceTask.then(async()=>{
+ if(!auth.currentUser){
+  try{await signInAnonymously(auth)}
+  catch(error){console.error("Anonymous sign-in failed",error);if($("status"))msg("Firebase sign-in failed: "+(error?.code||error?.message||"Check Firebase Authentication settings."));}
+ }
+});
 
 
 /* Master upgrade: groups, private wallet receipts and recurring bill scheduler */
