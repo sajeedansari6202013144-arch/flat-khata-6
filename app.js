@@ -59,7 +59,7 @@ let db,auth,uid,room,admin=false,expenses=[],away=[],members=[],off=[],bills=[],
 const firebaseApp=initializeApp(firebaseConfig);
 auth=getAuth(firebaseApp);
 db=getFirestore(firebaseApp);
-persistenceTask=setPersistence(auth,indexedDBLocalPersistence).catch(async indexedError=>{console.warn("IndexedDB auth persistence unavailable, trying browser storage.",indexedError);try{return await setPersistence(auth,browserLocalPersistence)}catch(persistenceError){console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in could not be saved on this device. Allow app storage and try again.");throw persistenceError;}});
+persistenceTask=setPersistence(auth,browserLocalPersistence).catch(persistenceError=>{console.error("Auth persistence setup failed",persistenceError);if($("status"))msg("Sign-in could not be saved on this device. Allow site data and try again.");});
 
 
 
@@ -808,7 +808,6 @@ let authStateReceived=false;
 const authStartupTimer=setTimeout(()=>{if(!authStateReceived&&$("status"))msg("Firebase sign-in is taking too long. Check internet access and allow site data in Chrome.");},10000);
 
 onAuthStateChanged(auth,async u=>{
-await persistenceTask;
 u=auth.currentUser;
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
