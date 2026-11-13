@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,reauthenticateWithCredential,signOut,setPersistence,browserLocalPersistence,indexedDBLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,signInAnonymously,onAuthStateChanged,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,createUserWithEmailAndPassword,reauthenticateWithCredential,signOut,setPersistence,browserLocalPersistence,indexedDBLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,addDoc,collection,getDocs,onSnapshot,serverTimestamp,deleteDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -65,11 +65,31 @@ persistenceTask=setPersistence(auth,indexedDBLocalPersistence).catch(async index
 
 const authCard=document.createElement("div");
 authCard.className="card";
-authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><button id="fk6LinkAccount">Link this existing member account once</button><button id="fk6SignIn" class="secondary">Continue to my flat</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
+authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><select id="fk6NewMemberName" class="hidden"><option value="">Select your existing member name</option><option>Asfak</option><option>Sajeed</option><option>Asrar</option><option>Abdus</option><option>Talib</option><option>Emteyaz</option></select><button id="fk6CreateAccount" class="secondary hidden">Create account and request approval</button><button id="fk6LinkAccount">Link this existing member account once</button><button id="fk6SignIn" class="secondary">Continue to my flat</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
 function mountAuthCard(target){
 if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
 mountAuthCard($("join"));
+$("fk6CreateAccount").onclick=async()=>{
+ try{
+  await persistenceTask;
+  const email=$("fk6AuthEmail").value.trim().toLowerCase(),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
+  if(!email||!/^\S+@\S+\.\S+$/.test(email))throw Error("Enter a valid email address.");
+  if(password.length<6)throw Error("Password must be at least 6 characters.");
+  if(!N.includes(name))throw Error("Select your existing member name.");
+  const roomSnap=await getDoc(doc(db,"rooms",code));
+  if(!roomSnap.exists())throw Error("Room code not found.");
+  const existing=await getDocs(collection(db,"rooms",code,"members"));
+  if(existing.docs.some(d=>d.data().name===name))throw Error("This member name is already linked to an account. Ask the room admin to check the pending approval or existing member.");
+  $("fk6AuthMsg").textContent="Creating your secure account…";
+  const credential=await createUserWithEmailAndPassword(auth,email,password);
+  await setDoc(doc(db,"rooms",code,"joinRequests",credential.user.uid),{uid:credential.user.uid,name,email,status:"pending",createdAt:serverTimestamp()});
+  localStorage.setItem("fk6_room",code);
+  $("fk6AuthMsg").textContent="Account created. Your request is waiting for the room admin's approval. Keep this app installed.";
+  alert("Account created. Ask the room admin to approve your "+name+" membership.");
+ }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
+};
 $("fk6LinkAccount").onclick=async()=>{
 try{
 let user=auth.currentUser,email=$("fk6AuthEmail").value.trim(),password=$("fk6AuthPassword").value,code=$("code").value.trim().toUpperCase();
@@ -92,7 +112,7 @@ async function connectRoomForSignedInUser(code){
  const roomSnap=await getDoc(doc(db,"rooms",code));
  if(!roomSnap.exists())throw Error("Room code not found.");
  const memberSnap=await getDoc(doc(db,"rooms",code,"members",user.uid));
- if(!memberSnap.exists())throw Error("This email is not linked to a flatmate yet. On the old device, tap Link this existing member account once using this email and password. This keeps the existing member identity.");
+ if(!memberSnap.exists()){const req=await getDoc(doc(db,"rooms",code,"joinRequests",user.uid));if(req.exists()&&req.data().status==="pending")throw Error("Your membership request is waiting for the room admin's approval. Ask the admin to open Flat Khata 6 and approve it.");throw Error("This account is not linked to a flatmate yet. Create an account request and ask the room admin to approve it.");}
  const memberName=memberSnap.data().name;
  if(!memberName)throw Error("Your member profile is incomplete. Ask the room admin to check it.");
  room=code;uid=user.uid;admin=roomSnap.data().adminUid===uid;
@@ -557,6 +577,26 @@ onSnapshot(collection(db,"rooms",room,"absences"),s=>{
 away=s.docs.map(d=>({id:d.id,...d.data()}));
 render();notifyActivity("away",s.docChanges())
 }),
+onSnapshot(collection(db,"rooms",room,"joinRequests"),s=>{
+ if(!admin){$("joinApprovalPanel")?.classList.add("hidden");return;}
+ const pending=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.status==="pending");
+ const panel=$("joinApprovalPanel"),list=$("joinApprovalList");
+ if(!panel||!list)return;
+ panel.classList.remove("hidden");
+ list.innerHTML=pending.map(x=>'<div class="row"><span><b>'+escapeHtml(x.name)+'</b><br><small>'+escapeHtml(x.email||"Email unavailable")+' · Awaiting approval</small></span><button type="button" data-approve-join="'+escapeHtml(x.id)+'">Approve</button></div>').join("")||'<p class="muted">No pending membership requests.</p>';
+ list.querySelectorAll("[data-approve-join]").forEach(button=>button.onclick=async()=>{
+  const requestId=button.dataset.approveJoin;
+  const request=pending.find(x=>x.id===requestId);
+  if(!request||!confirm("Approve "+request.name+" and link this account to the existing member slot?"))return;
+  try{
+   const current=await getDocs(collection(db,"rooms",room,"members"));
+   if(current.docs.some(d=>d.id!==requestId&&d.data().name===request.name))throw Error("Another account is already linked to "+request.name+". No data was changed.");
+   await setDoc(doc(db,"rooms",room,"members",requestId),{uid:requestId,name:request.name,role:"member",joinedAt:serverTimestamp()});
+   await deleteDoc(doc(db,"rooms",room,"joinRequests",requestId));
+   alert(request.name+" approved. They can now sign in and connect to the flat.");
+  }catch(e){alert("Approval failed: "+e.message)}
+ });
+}),
 onSnapshot(collection(db,"rooms",room,"members"),s=>{
 members=s.docs.map(d=>({...d.data(),uid:d.id}));
 $("memberCount").textContent=members.length+"/6";
@@ -772,7 +812,7 @@ await persistenceTask;
 u=auth.currentUser;
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
-$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="First-time sign in";
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Sign in";$("fk6CreateAccount").classList.remove("hidden");$("fk6NewMemberName").classList.remove("hidden");
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
@@ -788,7 +828,7 @@ localStorage.removeItem("fk6_logged_out");
 uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6AuthEmail").style.display="none";$("fk6AuthPassword").style.display="none";
-$("fk6SignIn").textContent="Connect room";
+$("fk6SignIn").textContent="Connect room";$("fk6CreateAccount").classList.add("hidden");$("fk6NewMemberName").classList.add("hidden");
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
