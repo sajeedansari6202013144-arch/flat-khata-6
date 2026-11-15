@@ -73,7 +73,7 @@ mountAuthCard($("join"));
 $("fk6CreateAccount").onclick=async()=>{
  try{
   await persistenceTask;
-  const email=$("fk6AuthEmail").value.trim().toLowerCase(),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
+  const currentUser=auth.currentUser,email=($("fk6AuthEmail").value.trim().toLowerCase()||currentUser?.email||""),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
   if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
   if(!email||!/^\S+@\S+\.\S+$/.test(email))throw Error("Enter a valid email address.");
   if(password.length<6)throw Error("Password must be at least 6 characters.");
@@ -83,8 +83,8 @@ $("fk6CreateAccount").onclick=async()=>{
   const existing=await getDocs(collection(db,"rooms",code,"members"));
   if(existing.docs.some(d=>d.data().name===name))throw Error("This member name is already linked to an account. Ask the room admin to check the pending approval or existing member.");
   $("fk6AuthMsg").textContent="Creating your secure account…";
-  const credential=await createUserWithEmailAndPassword(auth,email,password);
-  await setDoc(doc(db,"rooms",code,"joinRequests",credential.user.uid),{uid:credential.user.uid,name,email,status:"pending",createdAt:serverTimestamp()});
+  const accountUser=currentUser&&!currentUser.isAnonymous?currentUser:(await createUserWithEmailAndPassword(auth,email,password)).user;
+  await setDoc(doc(db,"rooms",code,"joinRequests",accountUser.uid),{uid:accountUser.uid,name,email,status:"pending",createdAt:serverTimestamp()});
   localStorage.setItem("fk6_room",code);
   $("fk6AuthMsg").textContent="Account created. Your request is waiting for the room admin's approval. Keep this app installed.";
   alert("Account created. Ask the room admin to approve your "+name+" membership.");
@@ -828,8 +828,8 @@ uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6AuthEmail").style.display=u.isAnonymous?"":"none";$("fk6AuthPassword").style.display=u.isAnonymous?"":"none";
 $("fk6SignIn").textContent="Connect room";
-$("fk6CreateAccount").classList.toggle("hidden",!u.isAnonymous);
-$("fk6NewMemberName").classList.toggle("hidden",!u.isAnonymous);
+$("fk6CreateAccount").classList.remove("hidden");
+$("fk6NewMemberName").classList.remove("hidden");
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
