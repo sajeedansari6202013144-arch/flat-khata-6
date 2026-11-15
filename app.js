@@ -65,11 +65,12 @@ persistenceTask=setPersistence(auth,browserLocalPersistence).catch(persistenceEr
 
 const authCard=document.createElement("div");
 authCard.className="card";
-authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Sign in once. Your account will stay signed in on this device until you log out.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><select id="fk6NewMemberName"><option value="">Select your existing member name</option><option>Asfak</option><option>Sajeed</option><option>Asrar</option><option>Abdus</option><option>Talib</option><option>Emteyaz</option></select><button id="fk6CreateAccount" class="secondary">Create account and request approval</button><button id="fk6LinkAccount">Link this existing member account once</button><button id="fk6SignIn" class="secondary">Continue to my flat</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
+authCard.innerHTML='<h3 id="fk6AuthTitle">Account access</h3><p class="muted" id="fk6AuthDescription">Already registered? Sign in with your email and password.</p><input id="fk6AuthEmail" type="email" autocomplete="email" placeholder="Your email address"><input id="fk6AuthPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><button id="fk6SignIn" class="secondary">Sign in</button><button id="fk6ShowSignup" type="button" class="secondary hidden">New flatmate? Request access</button><div id="fk6SignupFields" class="hidden"><select id="fk6NewMemberName"><option value="">Select your existing member name</option><option>Asfak</option><option>Sajeed</option><option>Asrar</option><option>Abdus</option><option>Talib</option><option>Emteyaz</option></select><button id="fk6CreateAccount" class="secondary">Create account and request approval</button></div><button id="fk6LinkAccount" class="hidden">Link this existing member account once</button><button id="fk6Logout" class="danger hidden">Log out</button><p class="muted" id="fk6AuthMsg">Your login is saved securely on this device.</p>';
 function mountAuthCard(target){
 if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
 mountAuthCard($("join"));
+$("fk6ShowSignup").onclick=()=>{$("fk6SignupFields").classList.toggle("hidden");$("fk6ShowSignup").textContent=$("fk6SignupFields").classList.contains("hidden")?"New flatmate? Request access":"Hide registration";};
 $("fk6CreateAccount").onclick=async()=>{
  let stage="Starting";
  try{
@@ -863,7 +864,7 @@ onAuthStateChanged(auth,async u=>{
 u=auth.currentUser;
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
-$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Sign in";$("fk6CreateAccount").classList.remove("hidden");$("fk6NewMemberName").classList.remove("hidden");
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Sign in";$("fk6ShowSignup").classList.toggle("hidden",!auth.currentUser?.isAnonymous);$("fk6SignupFields").classList.add("hidden");
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
@@ -880,8 +881,8 @@ uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6AuthEmail").style.display=u.isAnonymous?"":"none";$("fk6AuthPassword").style.display=u.isAnonymous?"":"none";
 $("fk6SignIn").textContent="Connect room";
-$("fk6CreateAccount").classList.toggle("hidden",!u.isAnonymous);
-$("fk6NewMemberName").classList.toggle("hidden",!u.isAnonymous);
+$("fk6ShowSignup").classList.toggle("hidden",!u.isAnonymous);
+$("fk6SignupFields").classList.add("hidden");
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
