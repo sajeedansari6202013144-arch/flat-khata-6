@@ -76,7 +76,9 @@ $("fk6CreateAccount").onclick=async()=>{
   stage="Waiting for device sign-in";
   $("fk6AuthMsg").textContent=stage+"…";
   await persistenceTask;
-  const currentUser=auth.currentUser,email=($("fk6AuthEmail").value.trim().toLowerCase()||currentUser?.email||""),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
+  let currentUser=auth.currentUser;
+  if(!currentUser){stage="Starting secure sign-in";$("fk6AuthMsg").textContent=stage+"…";currentUser=(await signInAnonymously(auth)).user;}
+  const email=($("fk6AuthEmail").value.trim().toLowerCase()||currentUser?.email||""),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
   stage="Validating details";
   if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
   if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error("Enter a valid email address.");
