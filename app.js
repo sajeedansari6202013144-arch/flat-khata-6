@@ -146,9 +146,19 @@ $("fk6SignIn").onclick=async()=>{
  if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
  localStorage.setItem("fk6_room",code);
  $("fk6AuthMsg").textContent="Signing in and connecting your flat…";
- const user=auth.currentUser;
- if(user)await connectRoomForSignedInUser(code);
- else {if(!email||!password)throw Error("Enter your email and password for the first login.");await signInWithEmailAndPassword(auth,email,password);}
+ let user=auth.currentUser;
+ if(user?.isAnonymous){
+  if(!email||!password)throw Error("Enter your approved member email and password to connect this device.");
+  $("fk6AuthMsg").textContent="Signing in to your approved member account…";
+  user=(await signInWithEmailAndPassword(auth,email,password)).user;
+  await connectRoomForSignedInUser(code);
+ }else if(user){
+  await connectRoomForSignedInUser(code);
+ }else{
+  if(!email||!password)throw Error("Enter your email and password for the first login.");
+  await signInWithEmailAndPassword(auth,email,password);
+  await connectRoomForSignedInUser(code);
+ }
  }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
 };
 
