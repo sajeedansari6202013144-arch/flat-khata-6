@@ -77,8 +77,9 @@ $("fk6CreateAccount").onclick=async()=>{
   $("fk6AuthMsg").textContent=stage+"…";
   await persistenceTask;
   const currentUser=auth.currentUser,email=($("fk6AuthEmail").value.trim().toLowerCase()||currentUser?.email||""),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
+  stage="Validating details";
   if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
-  if(!email||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw Error("Enter a valid email address.");
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error("Enter a valid email address.");
   if(password.length<6)throw Error("Password must be at least 6 characters.");
   if(!N.includes(name))throw Error("Select your existing member name.");
   stage="Checking room code";
