@@ -94,7 +94,8 @@ $("fk6CreateAccount").onclick=async()=>{
   if(existing.docs.some(d=>d.data().name===name))throw Error("This member name is already linked to an account. Ask the room admin to check the pending approval or existing member.");
   stage="Creating or using account";
   $("fk6AuthMsg").textContent=stage+"…";
-  const accountUser=currentUser&&!currentUser.isAnonymous?currentUser:(await createUserWithEmailAndPassword(auth,email,password)).user;
+  if(currentUser&&!currentUser.isAnonymous)throw Error("This device is already signed in to another account. Log out first, then create or sign in with Asfak’s own email.");
+  const accountUser=(await createUserWithEmailAndPassword(auth,email,password)).user;
   stage="Saving membership request";
   $("fk6AuthMsg").textContent=stage+"…";
   await setDoc(doc(db,"rooms",code,"joinRequests",accountUser.uid),{uid:accountUser.uid,name,email,status:"pending",createdAt:serverTimestamp()});
@@ -617,6 +618,8 @@ onSnapshot(collection(db,"rooms",room,"joinRequests"),s=>{
   const request=pending.find(x=>x.id===requestId);
   if(!request||!confirm("Approve "+request.name+" and link this account to the existing member slot?"))return;
   try{
+   const roomInfo=await getDoc(doc(db,"rooms",room));
+   if(requestId===roomInfo.data()?.adminUid)throw Error("This request belongs to the room admin account. It cannot be approved as another member.");
    const current=await getDocs(collection(db,"rooms",room,"members"));
    if(current.docs.some(d=>d.id!==requestId&&d.data().name===request.name))throw Error("Another account is already linked to "+request.name+". No data was changed.");
    await setDoc(doc(db,"rooms",room,"members",requestId),{uid:requestId,name:request.name,role:"member",joinedAt:serverTimestamp()});
@@ -626,6 +629,10 @@ onSnapshot(collection(db,"rooms",room,"joinRequests"),s=>{
  });
 }),
 onSnapshot(collection(db,"rooms",room,"members"),s=>{
+const adminMember=s.docs.find(d=>d.id===uid&&admin);
+if(adminMember&&(adminMember.data().name!=="Sajeed"||adminMember.data().role!=="admin")){
+ updateDoc(doc(db,"rooms",room,"members",uid),{name:"Sajeed",role:"admin"}).then(()=>console.info("Restored room admin identity from room adminUid.")).catch(e=>console.error("Could not restore admin identity",e));
+}
 members=s.docs.map(d=>({...d.data(),uid:d.id}));
 $("memberCount").textContent=members.length+"/6";
 const currentMemberName=members.find(m=>m.uid===uid)?.name||localStorage.getItem("fk6_name")||"";
