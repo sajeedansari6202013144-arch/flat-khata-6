@@ -71,24 +71,39 @@ if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
 mountAuthCard($("join"));
 $("fk6CreateAccount").onclick=async()=>{
+ let stage="Starting";
  try{
+  stage="Waiting for device sign-in";
+  $("fk6AuthMsg").textContent=stage+"…";
   await persistenceTask;
   const currentUser=auth.currentUser,email=($("fk6AuthEmail").value.trim().toLowerCase()||currentUser?.email||""),password=$("fk6AuthPassword").value,name=$("fk6NewMemberName").value,code=$("code").value.trim().toUpperCase();
   if(!/^[A-Z0-9]{5}$/.test(code))throw Error("Enter your 5-character room code.");
-  if(!email||!/^\S+@\S+\.\S+$/.test(email))throw Error("Enter a valid email address.");
+  if(!email||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw Error("Enter a valid email address.");
   if(password.length<6)throw Error("Password must be at least 6 characters.");
   if(!N.includes(name))throw Error("Select your existing member name.");
+  stage="Checking room code";
+  $("fk6AuthMsg").textContent=stage+"…";
   const roomSnap=await getDoc(doc(db,"rooms",code));
   if(!roomSnap.exists())throw Error("Room code not found.");
+  stage="Checking existing members";
+  $("fk6AuthMsg").textContent=stage+"…";
   const existing=await getDocs(collection(db,"rooms",code,"members"));
   if(existing.docs.some(d=>d.data().name===name))throw Error("This member name is already linked to an account. Ask the room admin to check the pending approval or existing member.");
-  $("fk6AuthMsg").textContent="Creating your secure account…";
+  stage="Creating or using account";
+  $("fk6AuthMsg").textContent=stage+"…";
   const accountUser=currentUser&&!currentUser.isAnonymous?currentUser:(await createUserWithEmailAndPassword(auth,email,password)).user;
+  stage="Saving membership request";
+  $("fk6AuthMsg").textContent=stage+"…";
   await setDoc(doc(db,"rooms",code,"joinRequests",accountUser.uid),{uid:accountUser.uid,name,email,status:"pending",createdAt:serverTimestamp()});
   localStorage.setItem("fk6_room",code);
-  $("fk6AuthMsg").textContent="Account created. Your request is waiting for the room admin's approval. Keep this app installed.";
+  $("fk6AuthMsg").textContent="Account created. Your request is waiting for the room admin's approval.";
   alert("Account created. Ask the room admin to approve your "+name+" membership.");
- }catch(e){$("fk6AuthMsg").textContent=e.message;alert(e.message)}
+ }catch(e){
+  console.error("Membership signup failed at: "+stage,e);
+  const detail=(e?.code?e.code+": ":"")+(e?.message||"Unknown error");
+  $("fk6AuthMsg").textContent="Failed at: "+stage+". "+detail;
+  alert("Failed at: "+stage+"\\n"+detail);
+ }
 };
 $("fk6LinkAccount").onclick=async()=>{
 try{
