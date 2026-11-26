@@ -95,8 +95,18 @@ $("fk6CreateAccount").onclick=async()=>{
   if(existing.docs.some(d=>d.data().name===name))throw Error("This member name is already linked to an account. Ask the room admin to check the pending approval or existing member.");
   stage="Creating or using account";
   $("fk6AuthMsg").textContent=stage+"…";
-  if(currentUser&&!currentUser.isAnonymous)throw Error("This device is already signed in to another account. Log out first, then create or sign in with Asfak’s own email.");
-  const accountUser=(await createUserWithEmailAndPassword(auth,email,password)).user;
+  let accountUser;
+  if(currentUser&&!currentUser.isAnonymous){
+   if((currentUser.email||"").toLowerCase()!==email)throw Error("This device is signed in with a different email. Sign out and use the member's own email.");
+   accountUser=currentUser;
+  }else{
+   try{accountUser=(await createUserWithEmailAndPassword(auth,email,password)).user;}
+   catch(createErr){
+    if(createErr.code==="auth/email-already-in-use"||createErr.code==="auth/credential-already-in-use"||createErr.code==="auth/email-already-exists"){
+     accountUser=(await signInWithEmailAndPassword(auth,email,password)).user;
+    }else throw createErr;
+   }
+  }
   stage="Saving membership request";
   $("fk6AuthMsg").textContent=stage+"…";
   await setDoc(doc(db,"rooms",code,"joinRequests",accountUser.uid),{uid:accountUser.uid,name,email,status:"pending",createdAt:serverTimestamp()});
@@ -879,11 +889,11 @@ return;
 localStorage.removeItem("fk6_logged_out");
 uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
-$("fk6AuthEmail").style.display=u.isAnonymous?"":"none";$("fk6AuthPassword").style.display=u.isAnonymous?"":"none";
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";
 $("fk6SignIn").textContent="Connect room";
 $("fk6ShowSignup").classList.remove("hidden");
-$("fk6SignupFields").classList.toggle("hidden",!u.isAnonymous);
-$("fk6ShowSignup").textContent=u.isAnonymous?"Already have an account? Sign in":"New flatmate? Create account";
+$("fk6SignupFields").classList.add("hidden");
+$("fk6ShowSignup").textContent="New flatmate? Create account";
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
