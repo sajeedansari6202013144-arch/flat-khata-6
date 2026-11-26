@@ -70,7 +70,7 @@ function mountAuthCard(target){
 if(target&&authCard.parentElement!==target)target.appendChild(authCard);
 }
 mountAuthCard($("join"));
-$("fk6ShowSignup").onclick=()=>{$("fk6SignupFields").classList.toggle("hidden");$("fk6ShowSignup").textContent=$("fk6SignupFields").classList.contains("hidden")?"New flatmate? Request access":"Hide registration";};
+$("fk6ShowSignup").onclick=()=>{$("fk6SignupFields").classList.toggle("hidden");const open=!$("fk6SignupFields").classList.contains("hidden");$("fk6ShowSignup").textContent=open?"Already have an account? Sign in":"New flatmate? Create account";};
 $("fk6CreateAccount").onclick=async()=>{
  let stage="Starting";
  try{
@@ -882,7 +882,8 @@ $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6AuthEmail").style.display=u.isAnonymous?"":"none";$("fk6AuthPassword").style.display=u.isAnonymous?"":"none";
 $("fk6SignIn").textContent="Connect room";
 $("fk6ShowSignup").classList.toggle("hidden",!u.isAnonymous);
-$("fk6SignupFields").classList.add("hidden");
+$("fk6SignupFields").classList.toggle("hidden",!u.isAnonymous);
+$("fk6ShowSignup").textContent=u.isAnonymous?"Already have an account? Sign in":"New flatmate? Create account";
 $("fk6SignIn").classList.remove("hidden");
 $("fk6Logout").classList.toggle("hidden",u.isAnonymous);
 if($("logoutMain"))$("logoutMain").classList.toggle("hidden",u.isAnonymous);
