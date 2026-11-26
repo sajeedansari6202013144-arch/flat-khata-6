@@ -864,7 +864,7 @@ onAuthStateChanged(auth,async u=>{
 u=auth.currentUser;
 authStateReceived=true;clearTimeout(authStartupTimer);
 if(!u){
-$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Sign in";$("fk6ShowSignup").classList.toggle("hidden",!auth.currentUser?.isAnonymous);$("fk6SignupFields").classList.add("hidden");
+$("fk6AuthEmail").style.display="";$("fk6AuthPassword").style.display="";$("fk6SignIn").textContent="Sign in";$("fk6ShowSignup").classList.remove("hidden");$("fk6ShowSignup").textContent="New flatmate? Create account";$("fk6SignupFields").classList.add("hidden");
 uid=undefined;room=undefined;admin=false;
 $("app").classList.add("hidden");$("join").classList.remove("hidden");
 mountAuthCard($("join"));
@@ -881,7 +881,7 @@ uid=u.uid;
 $("fk6LinkAccount").classList.toggle("hidden",!u.isAnonymous);
 $("fk6AuthEmail").style.display=u.isAnonymous?"":"none";$("fk6AuthPassword").style.display=u.isAnonymous?"":"none";
 $("fk6SignIn").textContent="Connect room";
-$("fk6ShowSignup").classList.toggle("hidden",!u.isAnonymous);
+$("fk6ShowSignup").classList.remove("hidden");
 $("fk6SignupFields").classList.toggle("hidden",!u.isAnonymous);
 $("fk6ShowSignup").textContent=u.isAnonymous?"Already have an account? Sign in":"New flatmate? Create account";
 $("fk6SignIn").classList.remove("hidden");
